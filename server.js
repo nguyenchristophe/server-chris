@@ -2,7 +2,7 @@ import { app } from "./app.js";
 import { connectDB } from "./data/database.js";
 import cloudinary from "cloudinary";
 import Stripe from "stripe";
-require("dotenv/config");
+
 connectDB();
 
 export const stripe = new Stripe(process.env.STRIPE_API_SECRET);
