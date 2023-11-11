@@ -14,16 +14,16 @@ export const login = asyncError(async (req, res, next) => {
   const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
-    return next(new ErrorHandler("Incorrect Email or Password", 400));
+    return next(new ErrorHandler("Incorrect Email ou mot de passe", 400));
   }
 
-  if (!password) return next(new ErrorHandler("Please Enter Password", 400));
+  if (!password) return next(new ErrorHandler("SVP saisir votre mot de passe", 400));
 
   // Handle error
   const isMatched = await user.comparePassword(password);
 
   if (!isMatched) {
-    return next(new ErrorHandler("Incorrect Email or Password", 400));
+    return next(new ErrorHandler("Incorrect Email ou mot de passe", 400));
   }
   sendToken(user, res, `Welcome Back, ${user.name}`, 200);
 });
@@ -33,7 +33,7 @@ export const signup = asyncError(async (req, res, next) => {
 
   let user = await User.findOne({ email });
 
-  if (user) return next(new ErrorHandler("User Already Exist", 400));
+  if (user) return next(new ErrorHandler("L'utilisateur existe déjà", 400));
 
   let avatar = undefined;
 
@@ -57,7 +57,7 @@ export const signup = asyncError(async (req, res, next) => {
     pinCode,
   });
 
-  sendToken(user, res, `Registered Successfully`, 201);
+  sendToken(user, res, `Enregistrement réussi`, 201);
 });
 
 export const logOut = asyncError(async (req, res, next) => {
@@ -69,7 +69,7 @@ export const logOut = asyncError(async (req, res, next) => {
     })
     .json({
       success: true,
-      message: "Logged Out Successfully",
+      message: "Déconnexion réussie",
     });
 });
 
@@ -98,7 +98,7 @@ export const updateProfile = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Profile Updated Successfully",
+    message: "Mise à jour réussie du profil",
   });
 });
 
@@ -109,19 +109,19 @@ export const changePassword = asyncError(async (req, res, next) => {
 
   if (!oldPassword || !newPassword)
     return next(
-      new ErrorHandler("Please Enter Old Password & New Password", 400)
+      new ErrorHandler("Veuillez saisir l'ancien mot de passe et le nouveau mot de passe", 400)
     );
 
   const isMatched = await user.comparePassword(oldPassword);
 
-  if (!isMatched) return next(new ErrorHandler("Incorrect Old Password", 400));
+  if (!isMatched) return next(new ErrorHandler("Ancien mot de passe incorrect", 400));
 
   user.password = newPassword;
   await user.save();
 
   res.status(200).json({
     success: true,
-    message: "Password Changed Successully",
+    message: "Le mot de passe a été modifié avec succès",
   });
 });
 
@@ -142,7 +142,7 @@ export const updatePic = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Avatar Updated Successfully",
+    message: "Avatar mis à jour avec succès",
   });
 });
 
@@ -162,9 +162,9 @@ export const forgetpassword = asyncError(async (req, res, next) => {
   user.otp_expire = new Date(Date.now() + otp_expire);
   await user.save();
 
-  const message = `Your OTP for Reseting Password is ${otp}.\n Please ignore if you haven't requested this.`;
+  const message = `Votre OTP pour la réinitialisation du mot de passe est ${otp}.\n Veuillez ignorer si vous n'en avez pas fait la demande.`;
   try {
-    await sendEmail("OTP For Reseting Password", user.email, message);
+    await sendEmail("OTP pour la réinitialisation du mot de passe", user.email, message);
   } catch (error) {
     user.otp = null;
     user.otp_expire = null;
@@ -189,10 +189,10 @@ export const resetpassword = asyncError(async (req, res, next) => {
   });
 
   if (!user)
-    return next(new ErrorHandler("Incorrect OTP or has been expired", 400));
+    return next(new ErrorHandler("OTP incorrect ou expiré", 400));
 
   if (!password)
-    return next(new ErrorHandler("Please Enter New Password", 400));
+    return next(new ErrorHandler("Saisir votre nouveau mot de passe", 400));
 
   user.password = password;
   user.otp = undefined;
@@ -202,6 +202,6 @@ export const resetpassword = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Password Changed Successfully, You can login now",
+    message: "Le mot de passe a été modifié avec succès, vous pouvez vous connecter maintenant",
   });
 });
