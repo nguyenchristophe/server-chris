@@ -75,7 +75,7 @@ export const getMyOrders = asyncError(async (req, res, next) => {
 export const getOrderDetails = asyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
-  if (!order) return next(new ErrorHandler("Order Not Found", 404));
+  if (!order) return next(new ErrorHandler("Commande introuvable", 404));
 
   res.status(200).json({
     success: true,
@@ -85,18 +85,18 @@ export const getOrderDetails = asyncError(async (req, res, next) => {
 
 export const proccessOrder = asyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
-  if (!order) return next(new ErrorHandler("Order Not Found", 404));
+  if (!order) return next(new ErrorHandler("Commande introuvable", 404));
 
   if (order.orderStatus === "Preparing") order.orderStatus = "Shipped";
   else if (order.orderStatus === "Shipped") {
     order.orderStatus = "Delivered";
     order.deliveredAt = new Date(Date.now());
-  } else return next(new ErrorHandler("Order Already Delivered", 400));
+  } else return next(new ErrorHandler("Commande déjà livrée", 400));
 
   await order.save();
 
   res.status(200).json({
     success: true,
-    message: "Order Processed Successfully",
+    message: "Commande traitée avec succès",
   });
 });
