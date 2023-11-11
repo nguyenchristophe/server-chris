@@ -6,19 +6,19 @@ import jwt from "jsonwebtoken";
 const schema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Please Enter Name"],
+    required: [true, "Veuillez saisir votre nom"],
   },
 
   email: {
     type: String,
     required: [true, "Please Enter Email"],
-    unique: [true, "Email Already Exist"],
+    unique: [true, "L'email existe déjà"],
     validate: validator.isEmail,
   },
   password: {
     type: String,
     required: [true, "Please Enter Password"],
-    minLength: [6, "Password must be at least 6 characters long"],
+    minLength: [6, "Le mot de passe doit comporter au moins 6 caractères"],
     select: false,
   },
   address: {
