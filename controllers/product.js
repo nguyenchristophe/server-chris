@@ -88,7 +88,7 @@ export const updateProduct = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Product Updated Successfully",
+    message: "Produit mis à jour avec succès",
   });
 });
 
@@ -138,7 +138,7 @@ export const deleteProductImage = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Image Deleted Successfully",
+    message: "Image supprimée avec succès",
   });
 });
 
