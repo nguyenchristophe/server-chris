@@ -37,7 +37,7 @@ export const getAdminProducts = asyncError(async (req, res, next) => {
 export const getProductDetails = asyncError(async (req, res, next) => {
   const product = await Product.findById(req.params.id).populate("category");
 
-  if (!product) return next(new ErrorHandler("Product not found", 404));
+  if (!product) return next(new ErrorHandler("Produit non trouvé", 404));
 
   res.status(200).json({
     success: true,
@@ -48,7 +48,7 @@ export const getProductDetails = asyncError(async (req, res, next) => {
 export const createProduct = asyncError(async (req, res, next) => {
   const { name, description, category, price, stock } = req.body;
 
-  if (!req.file) return next(new ErrorHandler("Please add image", 400));
+  if (!req.file) return next(new ErrorHandler("Veuillez ajouter une image", 400));
 
   const file = getDataUri(req.file);
   const myCloud = await cloudinary.v2.uploader.upload(file.content);
@@ -76,7 +76,7 @@ export const updateProduct = asyncError(async (req, res, next) => {
   const { name, description, category, price, stock } = req.body;
 
   const product = await Product.findById(req.params.id);
-  if (!product) return next(new ErrorHandler("Product not found", 404));
+  if (!product) return next(new ErrorHandler("Produit non trouvé", 404));
 
   if (name) product.name = name;
   if (description) product.description = description;
@@ -94,9 +94,9 @@ export const updateProduct = asyncError(async (req, res, next) => {
 
 export const addProductImage = asyncError(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
-  if (!product) return next(new ErrorHandler("Product not found", 404));
+  if (!product) return next(new ErrorHandler("Produit non trouvé", 404));
 
-  if (!req.file) return next(new ErrorHandler("Please add image", 400));
+  if (!req.file) return next(new ErrorHandler("Veuillez ajouter l'image", 400));
 
   const file = getDataUri(req.file);
   const myCloud = await cloudinary.v2.uploader.upload(file.content);
@@ -110,17 +110,17 @@ export const addProductImage = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Image Added Successfully",
+    message: "Image ajoutée avec succès",
   });
 });
 
 export const deleteProductImage = asyncError(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
-  if (!product) return next(new ErrorHandler("Product not found", 404));
+  if (!product) return next(new ErrorHandler("Produit pas trouvé", 404));
 
   const id = req.query.id;
 
-  if (!id) return next(new ErrorHandler("Please Image Id", 400));
+  if (!id) return next(new ErrorHandler("Veuillez indiquer l'identifiant de l'image", 400));
 
   let isExist = -1;
 
@@ -128,7 +128,7 @@ export const deleteProductImage = asyncError(async (req, res, next) => {
     if (item._id.toString() === id.toString()) isExist = index;
   });
 
-  if (isExist < 0) return next(new ErrorHandler("Image doesn't exist", 400));
+  if (isExist < 0) return next(new ErrorHandler("L'image n'existe pas", 400));
 
   await cloudinary.v2.uploader.destroy(product.images[isExist].public_id);
 
@@ -144,7 +144,7 @@ export const deleteProductImage = asyncError(async (req, res, next) => {
 
 export const deleteProduct = asyncError(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
-  if (!product) return next(new ErrorHandler("Product not found", 404));
+  if (!product) return next(new ErrorHandler("Produit pas trouvé", 404));
 
   for (let index = 0; index < product.images.length; index++) {
     await cloudinary.v2.uploader.destroy(product.images[index].public_id);
@@ -152,7 +152,7 @@ export const deleteProduct = asyncError(async (req, res, next) => {
   await product.remove();
   res.status(200).json({
     success: true,
-    message: "Product Deleted Successfully",
+    message: "Produit supprimé avec succès",
   });
 });
 
@@ -161,7 +161,7 @@ export const addCategory = asyncError(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: "Category Added Successfully",
+    message: "La catégorie a été ajoutée avec succès",
   });
 });
 
@@ -189,6 +189,6 @@ export const deleteCategory = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Category Deleted Successfully",
+    message: "Catégorie supprimée avec succès",
   });
 });
