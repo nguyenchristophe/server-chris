@@ -11,13 +11,13 @@ const schema = new mongoose.Schema({
 
   email: {
     type: String,
-    required: [true, "Please Enter Email"],
+    required: [true, "Veuillez saisir votre email"],
     unique: [true, "L'email existe déjà"],
     validate: validator.isEmail,
   },
   password: {
     type: String,
-    required: [true, "Please Enter Password"],
+    required: [true, "Veuillez saisir votre mot de passe"],
     minLength: [6, "Le mot de passe doit comporter au moins 6 caractères"],
     select: false,
   },
