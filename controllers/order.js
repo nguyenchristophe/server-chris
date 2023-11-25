@@ -5,12 +5,12 @@ import ErrorHandler from "../utils/error.js";
 import { stripe } from "../server.js";
 
 export const processPayment = asyncError(async (req, res, next) => {
-  const { totalAmount, taxPrice } = req.body;
+  const { totalAmount, description } = req.body;
 
   const { client_secret } = await stripe.paymentIntents.create({
     amount: Number(totalAmount * 100),
     currency: "eur",
-    description:`${taxPrice} ${taxPrice}(s)`
+    description:`${description} ${description}(s)`
   });
 
   res.status(200).json({
