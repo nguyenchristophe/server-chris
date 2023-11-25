@@ -3,9 +3,28 @@ import { Order } from "../models/order.js";
 import { Product } from "../models/product.js";
 import ErrorHandler from "../utils/error.js";
 import { stripe } from "../server.js";
+import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
 
 export const processPayment = asyncError(async (req, res, next) => {
   const { totalAmount,product_name,user_name,paymentMethod } = req.body;
+
+
+const initializePaymentSheet = async () => {
+  try {
+    const { error } = await initPaymentSheet({
+    
+      returnURL: '/', // Replace with your actual app URL scheme
+    });
+
+    if (error) {
+      console.error('Error initializing Payment Sheet:', error);
+    }
+  } catch (e) {
+    console.error('Error initializing Payment Sheet:', e);
+  }
+};
+
+  
 
   const { client_secret } = await stripe.paymentIntents.create({
     amount: Number(totalAmount * 100),
@@ -102,4 +121,6 @@ export const proccessOrder = asyncError(async (req, res, next) => {
     success: true,
     message: "Commande traitée avec succès",
   });
+
+  initializePaymentSheet();
 });
