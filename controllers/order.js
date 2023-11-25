@@ -9,22 +9,6 @@ export const processPayment = asyncError(async (req, res, next) => {
   const { totalAmount,product_name,user_name,paymentMethod } = req.body;
 
 
-const initializePaymentSheet = async () => {
-  try {
-    const { error } = await initPaymentSheet({
-    
-      returnURL: '/', // Replace with your actual app URL scheme
-    });
-
-    if (error) {
-      console.error('Error initializing Payment Sheet:', error);
-    }
-  } catch (e) {
-    console.error('Error initializing Payment Sheet:', e);
-  }
-};
-
-  
 
   const { client_secret } = await stripe.paymentIntents.create({
     amount: Number(totalAmount * 100),
@@ -106,6 +90,25 @@ export const getOrderDetails = asyncError(async (req, res, next) => {
 });
 
 export const proccessOrder = asyncError(async (req, res, next) => {
+
+
+const initializePaymentSheet = async () => {
+  try {
+    const { error } = await initPaymentSheet({
+    
+      returnURL: '/', // Replace with your actual app URL scheme
+    });
+
+    if (error) {
+      console.error('Error initializing Payment Sheet:', error);
+    }
+  } catch (e) {
+    console.error('Error initializing Payment Sheet:', e);
+  }
+};
+
+
+  
   const order = await Order.findById(req.params.id);
   if (!order) return next(new ErrorHandler("Commande introuvable", 404));
 
