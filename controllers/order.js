@@ -88,10 +88,6 @@ export const getOrderDetails = asyncError(async (req, res, next) => {
     order,
   });
 });
-
-export const proccessOrder = asyncError(async (req, res, next) => {
-
-
 const initializePaymentSheet = async () => {
   try {
     const { error } = await initPaymentSheet({
@@ -106,6 +102,10 @@ const initializePaymentSheet = async () => {
     console.error('Error initializing Payment Sheet:', e);
   }
 };
+export const proccessOrder = asyncError(async (req, res, next) => {
+
+
+
 
 
   
