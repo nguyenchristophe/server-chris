@@ -3,7 +3,7 @@ import { Order } from "../models/order.js";
 import { Product } from "../models/product.js";
 import ErrorHandler from "../utils/error.js";
 import { stripe } from "../server.js";
-import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
+
 
 export const processPayment = asyncError(async (req, res, next) => {
   const { totalAmount,product_name,user_name,paymentMethod } = req.body;
