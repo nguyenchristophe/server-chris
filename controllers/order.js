@@ -3,6 +3,9 @@ import { Order } from "../models/order.js";
 import { Product } from "../models/product.js";
 import ErrorHandler from "../utils/error.js";
 import { stripe } from "../server.js";
+import { useStripe } from '@stripe/stripe-react-native';
+
+const stripe = useStripe();
 
 
 export const processPayment = asyncError(async (req, res, next) => {
@@ -92,7 +95,23 @@ export const getOrderDetails = asyncError(async (req, res, next) => {
 export const proccessOrder = asyncError(async (req, res, next) => {
 
 
+const initializePaymentSheet = async () => {
+  try {
+    const { paymentSheet, error } = await stripe.initPaymentSheet({
+      // other parameters
+      returnURL: 'your-app://payment-sheet',
+    });
 
+    if (error) {
+      console.log('Error initializing PaymentSheet:', error);
+    } else {
+      // Use the initialized payment sheet
+      presentPaymentSheet(paymentSheet);
+    }
+  } catch (e) {
+    console.log('Error initializing PaymentSheet:', e);
+  }
+};
 
 
   
@@ -112,5 +131,5 @@ export const proccessOrder = asyncError(async (req, res, next) => {
     message: "Commande traitée avec succès",
   });
 
- 
+ initializePaymentSheet();
 });
