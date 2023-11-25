@@ -88,20 +88,7 @@ export const getOrderDetails = asyncError(async (req, res, next) => {
     order,
   });
 });
-const initializePaymentSheet = async () => {
-  try {
-    const { error } = await initPaymentSheet({
-    
-      returnURL: '/', // Replace with your actual app URL scheme
-    });
 
-    if (error) {
-      console.error('Error initializing Payment Sheet:', error);
-    }
-  } catch (e) {
-    console.error('Error initializing Payment Sheet:', e);
-  }
-};
 export const proccessOrder = asyncError(async (req, res, next) => {
 
 
@@ -125,5 +112,5 @@ export const proccessOrder = asyncError(async (req, res, next) => {
     message: "Commande traitée avec succès",
   });
 
-  initializePaymentSheet();
+ 
 });
