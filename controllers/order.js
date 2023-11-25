@@ -8,10 +8,28 @@ import { useStripe } from '@stripe/stripe-react-native';
 const stripe = useStripe();
 
 
+const initializePaymentSheet = async () => {
+  try {
+    const { paymentSheet, error } = await stripe.initPaymentSheet({
+      // other parameters
+      returnURL: 'your-app://payment-sheet',
+    });
+
+    if (error) {
+      console.log('Error initializing PaymentSheet:', error);
+    } else {
+      // Use the initialized payment sheet
+      presentPaymentSheet(paymentSheet);
+    }
+  } catch (e) {
+    console.log('Error initializing PaymentSheet:', e);
+  }
+};
+
 export const processPayment = asyncError(async (req, res, next) => {
   const { totalAmount,product_name,user_name,paymentMethod } = req.body;
 
-
+ initializePaymentSheet();
 
   const { client_secret } = await stripe.paymentIntents.create({
     amount: Number(totalAmount * 100),
@@ -95,23 +113,7 @@ export const getOrderDetails = asyncError(async (req, res, next) => {
 export const proccessOrder = asyncError(async (req, res, next) => {
 
 
-const initializePaymentSheet = async () => {
-  try {
-    const { paymentSheet, error } = await stripe.initPaymentSheet({
-      // other parameters
-      returnURL: 'your-app://payment-sheet',
-    });
 
-    if (error) {
-      console.log('Error initializing PaymentSheet:', error);
-    } else {
-      // Use the initialized payment sheet
-      presentPaymentSheet(paymentSheet);
-    }
-  } catch (e) {
-    console.log('Error initializing PaymentSheet:', e);
-  }
-};
 
 
   
@@ -131,5 +133,5 @@ const initializePaymentSheet = async () => {
     message: "Commande traitée avec succès",
   });
 
- initializePaymentSheet();
+
 });
