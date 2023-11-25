@@ -11,7 +11,7 @@ export const processPayment = asyncError(async (req, res, next) => {
     amount: Number(totalAmount * 100),
     currency: "eur",
     description:`le poème ${product_name} écrit par ${user_name}`,
-    payment_method:VISA
+    payment_method:"VISA"
     
   });
 
