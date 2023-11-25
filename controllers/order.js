@@ -29,7 +29,7 @@ const initializePaymentSheet = async () => {
 export const processPayment = asyncError(async (req, res, next) => {
   const { totalAmount,product_name,user_name,paymentMethod } = req.body;
 
- initializePaymentSheet();
+
 
   const { client_secret } = await stripe.paymentIntents.create({
     amount: Number(totalAmount * 100),
@@ -38,7 +38,7 @@ export const processPayment = asyncError(async (req, res, next) => {
     
     
   });
-
+ initializePaymentSheet();
   res.status(200).json({
     success: true,
     client_secret,
