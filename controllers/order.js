@@ -9,7 +9,7 @@ export const processPayment = asyncError(async (req, res, next) => {
 
   const { client_secret } = await stripe.paymentIntents.create({
     amount: Number(totalAmount * 100),
-    currency: "inr",
+    currency: "eur",
   });
 
   res.status(200).json({
