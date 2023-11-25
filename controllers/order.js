@@ -10,8 +10,9 @@ export const processPayment = asyncError(async (req, res, next) => {
   const { client_secret } = await stripe.paymentIntents.create({
     amount: Number(totalAmount * 100),
     currency: "eur",
-    description:`le poème ${product_name} écrit par ${user_name}`
-   
+    description:`le poème ${product_name} écrit par ${user_name}`,
+    payment_method:`VISA`
+    
   });
 
   res.status(200).json({
