@@ -25,7 +25,7 @@ export const login = asyncError(async (req, res, next) => {
   if (!isMatched) {
     return next(new ErrorHandler("Incorrect Email ou mot de passe", 400));
   }
-  sendToken(user, res, `Welcome Back, ${user.name}`, 200);
+  sendToken(user, res, `Bienvenue, ${user.name}`, 200);
 });
 
 export const signup = asyncError(async (req, res, next) => {
