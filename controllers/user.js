@@ -174,7 +174,7 @@ export const forgetpassword = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: `Email Sent To ${user.email}`,
+    message: `le code est envoyé à ${user.email}`,
   });
 });
 
