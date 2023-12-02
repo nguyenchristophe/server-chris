@@ -31,6 +31,7 @@ export const cookieOptions = {
 
 export const sendEmail = async (subject, to, text) => {
   const transporter = createTransport({
+    service: 'gmail',
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
     auth: {
