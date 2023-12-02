@@ -53,7 +53,7 @@ export const createProduct = asyncError(async (req, res, next) => {
   const file = getDataUri(req.file);
   const myCloud = await cloudinary.v2.uploader.upload(file.content);
   const image = {
-    _id: myCloud._id,
+    public_id: myCloud.public_id,
     url: myCloud.secure_url,
   };
 
