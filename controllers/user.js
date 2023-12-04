@@ -162,9 +162,9 @@ export const forgetpassword = asyncError(async (req, res, next) => {
   user.otp_expire = new Date(Date.now() + otp_expire);
   await user.save();
 
-  const message = `Votre OTP pour la réinitialisation du mot de passe est ${otp}.\n Veuillez ignorer si vous n'en avez pas fait la demande.`;
+  const message = `Votre code temporaire pour la réinitialisation du mot de passe est ${otp}.\n Veuillez ignorer si vous n'en avez pas fait la demande.`;
   try {
-    await sendEmail("OTP pour la réinitialisation du mot de passe", user.email, message);
+    await sendEmail("Code temporaire pour la réinitialisation du mot de passe", user.email, message);
   } catch (error) {
     user.otp = null;
     user.otp_expire = null;
@@ -189,7 +189,7 @@ export const resetpassword = asyncError(async (req, res, next) => {
   });
 
   if (!user)
-    return next(new ErrorHandler("OTP incorrect ou expiré", 400));
+    return next(new ErrorHandler("Code incorrect ou expiré", 400));
 
   if (!password)
     return next(new ErrorHandler("Saisir votre nouveau mot de passe", 400));
