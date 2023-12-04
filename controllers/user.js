@@ -162,7 +162,7 @@ export const forgetpassword = asyncError(async (req, res, next) => {
   user.otp_expire = new Date(Date.now() + otp_expire);
   await user.save();
 
-  const message = `Votre <b>code temporaire</b> (dans 2 minutes) pour la réinitialisation du mot de passe est ${otp}.\n Veuillez ignorer si vous n'en avez pas fait la demande.`;
+  const message = `Votre code temporaire ( expiré dans 2 minutes) pour la réinitialisation du mot de passe est ${otp}.\n Veuillez ignorer si vous n'en avez pas fait la demande.`;
   try {
     await sendEmail("Code temporaire pour la réinitialisation du mot de passe", user.email, message);
   } catch (error) {
