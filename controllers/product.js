@@ -68,7 +68,7 @@ export const createProduct = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Product Created Successfully",
+    message: "Votre poème vient d'être creé",
   });
 });
 
