@@ -34,6 +34,7 @@ import order from "./routes/order.js";
 app.use("/api/v1/user", user);
 app.use("/api/v1/product", product);
 app.use("/api/v1/order", order);
+app.use("/api/v1/chat", chatRoutes);
 
 // Using Error Middleware
 app.use(errorMiddleware);
