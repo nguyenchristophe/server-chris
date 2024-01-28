@@ -1,6 +1,6 @@
 // chat/controllers/chatController.js
 import Message from "../models/Message.js";
-import User from "../models/User.js"; // Assurez-vous que le chemin est correct
+import User from "../models/user.js"; // Assurez-vous que le chemin est correct
 
 export const sendMessage = async (req, res, next) => {
   try {
