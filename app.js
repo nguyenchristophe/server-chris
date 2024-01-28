@@ -3,7 +3,7 @@ import { config } from "dotenv";
 import { errorMiddleware } from "./middlewares/error.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import chatRoutes from "./chat/routes/chatRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 config({
   path: "./data/config.env",
