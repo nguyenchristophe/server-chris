@@ -9,31 +9,33 @@ import {
 } from "../utils/features.js";
 import cloudinary from "cloudinary";
 
+// Login user
 export const login = asyncError(async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
-    return next(new ErrorHandler("Incorrect Email ou mot de passe", 400));
+    return next(new ErrorHandler("Email ou mot de passe incorrect", 400));
   }
 
-  if (!password) return next(new ErrorHandler("SVP saisir votre mot de passe", 400));
+  if (!password) return next(new ErrorHandler("Veuillez saisir votre mot de passe", 400));
 
-  // Handle error
   const isMatched = await user.comparePassword(password);
 
   if (!isMatched) {
-    return next(new ErrorHandler("Incorrect Email ou mot de passe", 400));
+    return next(new ErrorHandler("Email ou mot de passe incorrect", 400));
   }
+
   sendToken(user, res, `Bienvenue, ${user.name}`, 200);
 });
 
+// Sign up user
 export const signup = asyncError(async (req, res, next) => {
   const { name, email, password, address, city, country, pinCode } = req.body;
 
   let user = await User.findOne({ email });
 
-  if (user) return next(new ErrorHandler("L'utilisateur existe déjà", 400));
+  if (user) return next(new ErrorHandler("Cet utilisateur existe déjà", 400));
 
   let avatar = undefined;
 
@@ -60,6 +62,7 @@ export const signup = asyncError(async (req, res, next) => {
   sendToken(user, res, `Enregistrement réussi`, 201);
 });
 
+// Logout user
 export const logOut = asyncError(async (req, res, next) => {
   res
     .status(200)
@@ -73,6 +76,7 @@ export const logOut = asyncError(async (req, res, next) => {
     });
 });
 
+// Get user profile
 export const getMyProfile = asyncError(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
@@ -82,6 +86,7 @@ export const getMyProfile = asyncError(async (req, res, next) => {
   });
 });
 
+// Update profile
 export const updateProfile = asyncError(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
@@ -98,10 +103,11 @@ export const updateProfile = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Mise à jour réussie du profil",
+    message: "Mise à jour du profil réussie",
   });
 });
 
+// Change password
 export const changePassword = asyncError(async (req, res, next) => {
   const user = await User.findById(req.user._id).select("+password");
 
@@ -109,7 +115,7 @@ export const changePassword = asyncError(async (req, res, next) => {
 
   if (!oldPassword || !newPassword)
     return next(
-      new ErrorHandler("Veuillez saisir l'ancien mot de passe et le nouveau mot de passe", 400)
+      new ErrorHandler("Veuillez saisir l'ancien et le nouveau mot de passe", 400)
     );
 
   const isMatched = await user.comparePassword(oldPassword);
@@ -121,10 +127,11 @@ export const changePassword = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Le mot de passe a été modifié avec succès",
+    message: "Mot de passe mis à jour avec succès",
   });
 });
 
+// Update avatar
 export const updatePic = asyncError(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
@@ -146,13 +153,12 @@ export const updatePic = asyncError(async (req, res, next) => {
   });
 });
 
+// Forgot password
 export const forgetpassword = asyncError(async (req, res, next) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
 
-  if (!user) return next(new ErrorHandler("Incorrect Email", 404));
-  // max,min 2000,10000
-  // math.random()*(max-min)+min
+  if (!user) return next(new ErrorHandler("Email incorrect", 404));
 
   const randomNumber = Math.random() * (999999 - 100000) + 100000;
   const otp = Math.floor(randomNumber);
@@ -162,9 +168,9 @@ export const forgetpassword = asyncError(async (req, res, next) => {
   user.otp_expire = new Date(Date.now() + otp_expire);
   await user.save();
 
-  const message = `Votre code temporaire ( expiré dans 2 minutes) pour la réinitialisation du mot de passe est ${otp}.\n Veuillez ignorer si vous n'en avez pas fait la demande.`;
+  const message = `Votre code OTP pour réinitialiser le mot de passe est ${otp} (expire dans 2 minutes). Si vous n'avez pas fait cette demande, ignorez ce message.`;
   try {
-    await sendEmail("Code temporaire pour la réinitialisation du mot de passe", user.email, message);
+    await sendEmail("Réinitialisation du mot de passe", user.email, message);
   } catch (error) {
     user.otp = null;
     user.otp_expire = null;
@@ -174,10 +180,11 @@ export const forgetpassword = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: `le code est envoyé à ${user.email}`,
+    message: `Code envoyé à ${user.email}`,
   });
 });
 
+// Reset password
 export const resetpassword = asyncError(async (req, res, next) => {
   const { otp, password } = req.body;
 
@@ -189,10 +196,10 @@ export const resetpassword = asyncError(async (req, res, next) => {
   });
 
   if (!user)
-    return next(new ErrorHandler("Code incorrect ou expiré", 400));
+    return next(new ErrorHandler("OTP incorrect ou expiré", 400));
 
   if (!password)
-    return next(new ErrorHandler("Saisir votre nouveau mot de passe", 400));
+    return next(new ErrorHandler("Veuillez entrer un nouveau mot de passe", 400));
 
   user.password = password;
   user.otp = undefined;
@@ -202,6 +209,37 @@ export const resetpassword = asyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Le mot de passe a été modifié avec succès, vous pouvez vous connecter maintenant",
+    message: "Mot de passe réinitialisé avec succès, vous pouvez maintenant vous connecter",
+  });
+});
+
+// Update user subscription
+export const updateSubscription = asyncError(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+
+  const { subscription } = req.body;
+
+  const validSubscriptions = [
+    "neutral",
+    "visionnaire",
+    "createur",
+    "innovateur",
+    "externes_basic",
+    "externes_semi_basic",
+    "externes_must",
+    "must_innovateurs",
+  ];
+
+  if (!validSubscriptions.includes(subscription)) {
+    return next(new ErrorHandler("Type d'abonnement non valide", 400));
+  }
+
+  user.subscription = subscription;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Abonnement mis à jour : ${subscription}`,
   });
 });
