@@ -8,7 +8,6 @@ const schema = new mongoose.Schema({
     type: String,
     required: [true, "Veuillez saisir votre nom"],
   },
-
   email: {
     type: String,
     required: [true, "Veuillez saisir votre email"],
@@ -37,19 +36,26 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-
   role: {
     type: String,
-    enum: ["admin", "user"],
-    default: "admin",
+    enum: ["admin", "user", "neutral", "visionnaire", "createur", "innovateur", "externes_basic", "externes_semi_basic", "externes_must", "must_innovateurs"],
+    default: "neutral",
   },
-
   avatar: {
     public_id: String,
     url: String,
   },
+  subscription: {
+    type: String,
+    enum: ["neutral", "visionnaire", "createur", "innovateur", "externes_basic", "externes_semi_basic", "externes_must", "must_innovateurs"],
+    default: "neutral",
+  },
   otp: Number,
   otp_expire: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
 });
 
 schema.pre("save", async function (next) {
