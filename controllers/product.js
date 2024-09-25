@@ -45,6 +45,8 @@ export const getProductDetails = asyncError(async (req, res, next) => {
   });
 });
 
+
+
 export const createProduct = asyncError(async (req, res, next) => {
   const { name, description, category, price, stock } = req.body;
 
@@ -113,6 +115,62 @@ export const addProductImage = asyncError(async (req, res, next) => {
     message: "Image ajoutée avec succès",
   });
 });
+
+export const voteProduct = asyncError(async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) return next(new ErrorHandler("Produit non trouvé", 404));
+
+  // Vérifiez si l'utilisateur a déjà voté
+  const hasVoted = product.votes.some(
+    (vote) => vote.user.toString() === req.user._id.toString()
+  );
+
+  if (hasVoted) {
+    return next(new ErrorHandler("Vous avez déjà voté pour ce poème.", 400));
+  }
+
+  product.votes.push({ user: req.user._id });
+  product.voteCount += 1;
+  await product.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Votre vote a été enregistré.",
+    voteCount: product.voteCount,
+  });
+});
+export const likeProduct = asyncError(async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) return next(new ErrorHandler("Produit non trouvé", 404));
+
+  // Vérifiez si l'utilisateur a déjà liké
+  const hasLiked = product.likes.some(
+    (like) => like.user.toString() === req.user._id.toString()
+  );
+
+  if (hasLiked) {
+    // Supprimer le like si déjà liké
+    product.likes = product.likes.filter(
+      (like) => like.user.toString() !== req.user._id.toString()
+    );
+    product.likeCount -= 1;
+  } else {
+    // Ajouter un like
+    product.likes.push({ user: req.user._id });
+    product.likeCount += 1;
+  }
+
+  await product.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Votre like a été mis à jour.",
+    likeCount: product.likeCount,
+  });
+});
+
 
 export const deleteProductImage = asyncError(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
