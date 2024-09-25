@@ -219,6 +219,7 @@ export const updateSubscription = asyncError(async (req, res, next) => {
 
   const { subscription } = req.body;
 
+  console.log('Received subscription type:', subscription);
   const validSubscriptions = [
     "neutral",
     "visionnaire",
