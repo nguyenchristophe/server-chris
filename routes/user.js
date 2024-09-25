@@ -12,8 +12,11 @@ import {
 } from "../controllers/user.js";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { singleUpload } from "../middlewares/multer.js";
+import { updateSubscription } from "../controllers/user.js";
 
 const router = express.Router();
+
+router.put("/update-subscription", isAuthenticated, updateSubscription);
 
 router.post("/login", login);
 
