@@ -14,6 +14,7 @@ import {
 } from "../controllers/product.js";
 import { isAuthenticated, isAdmin } from "../middlewares/auth.js";
 import { singleUpload } from "../middlewares/multer.js";
+import { voteProduct, likeProduct } from "../controllers/product.js";
 
 const router = express.Router();
 
@@ -38,5 +39,11 @@ router.post("/category", isAuthenticated, isAdmin, addCategory);
 router.get("/categories", getAllCategories);
 
 router.delete("/category/:id", isAuthenticated, isAdmin, deleteCategory);
+
+// Route pour voter
+router.put("/product/:id/vote", isAuthenticated, voteProduct);
+
+// Route pour liker
+router.put("/product/:id/like", isAuthenticated, likeProduct);
 
 export default router;
