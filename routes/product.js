@@ -41,9 +41,14 @@ router.get("/categories", getAllCategories);
 router.delete("/category/:id", isAuthenticated, isAdmin, deleteCategory);
 
 // Route pour voter
-router.put("/product/:id/vote", isAuthenticated, voteProduct);
+//router.put("/product/:id/vote", isAuthenticated, voteProduct);
+// Route pour voter un produit
+router.put("/:id/vote", isAuthenticated, voteProduct);
+
+// Route pour liker un produit
+router.put("/:id/like", isAuthenticated, likeProduct);
 
 // Route pour liker
-router.put("/product/:id/like", isAuthenticated, likeProduct);
+//router.put("/product/:id/like", isAuthenticated, likeProduct);
 
 export default router;
