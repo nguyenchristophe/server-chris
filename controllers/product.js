@@ -117,22 +117,27 @@ export const addProductImage = asyncError(async (req, res, next) => {
 });
 
 export const voteProduct = asyncError(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const { id } = req.params;
+  const userId = req.user._id;
 
+  console.log(`📌 Utilisateur: ${userId} vote pour le produit: ${id}`);
+
+  const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Produit non trouvé", 404));
 
-  // Vérifiez si l'utilisateur a déjà voté
-  const hasVoted = product.votes.some(
-    (vote) => vote.user.toString() === req.user._id.toString()
-  );
+  const hasVoted = product.votes.some(vote => vote.user.toString() === userId.toString());
 
   if (hasVoted) {
+    console.log("⚠️ Déjà voté !");
     return next(new ErrorHandler("Vous avez déjà voté pour ce poème.", 400));
   }
 
-  product.votes.push({ user: req.user._id });
+  // Ajout du vote
+  product.votes.push({ user: userId });
   product.voteCount += 1;
   await product.save();
+
+  console.log(`✅ Vote ajouté avec succès ! Nouveau nombre de votes: ${product.voteCount}`);
 
   res.status(200).json({
     success: true,
@@ -140,29 +145,31 @@ export const voteProduct = asyncError(async (req, res, next) => {
     voteCount: product.voteCount,
   });
 });
-export const likeProduct = asyncError(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
 
+export const likeProduct = asyncError(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  console.log(`📌 Utilisateur: ${userId} like le produit: ${id}`);
+
+  const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Produit non trouvé", 404));
 
-  // Vérifiez si l'utilisateur a déjà liké
-  const hasLiked = product.likes.some(
-    (like) => like.user.toString() === req.user._id.toString()
-  );
+  const hasLiked = product.likes.some(like => like.user.toString() === userId.toString());
 
   if (hasLiked) {
-    // Supprimer le like si déjà liké
-    product.likes = product.likes.filter(
-      (like) => like.user.toString() !== req.user._id.toString()
-    );
+    console.log("⚠️ Déjà liké ! Suppression du like...");
+    product.likes = product.likes.filter(like => like.user.toString() !== userId.toString());
     product.likeCount -= 1;
   } else {
-    // Ajouter un like
-    product.likes.push({ user: req.user._id });
+    console.log("✅ Like ajouté !");
+    product.likes.push({ user: userId });
     product.likeCount += 1;
   }
 
   await product.save();
+
+  console.log(`📊 Nouveau nombre de likes: ${product.likeCount}`);
 
   res.status(200).json({
     success: true,
@@ -170,6 +177,8 @@ export const likeProduct = asyncError(async (req, res, next) => {
     likeCount: product.likeCount,
   });
 });
+
+
 
 
 export const deleteProductImage = asyncError(async (req, res, next) => {
