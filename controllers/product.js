@@ -297,3 +297,24 @@ export const addAssetToProduct = asyncError(async (req, res, next) => {
     assetsSelected: product.assetsSelected,
   });
 });
+
+export const rentPoem = asyncError(async (req, res, next) => {
+  const productId = req.params.id;
+  const product = await Product.findById(productId).populate("assetsSelected.asset");
+
+  if (!product) return next(new ErrorHandler("Poème introuvable", 404));
+
+  // Calcule le prix total
+  let totalPrice = product.price;
+  for (const item of product.assetsSelected) {
+    totalPrice += item.extraCost;
+  }
+
+  // Ici, tu peux lancer un paiement Stripe, PayPal...
+  // Ex: const paymentIntent = await stripe.paymentIntents.create({ ... totalPrice... })
+
+  res.status(200).json({
+    success: true,
+    message: `Poème loué. Prix total : ${totalPrice} €`,
+  });
+});
