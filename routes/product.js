@@ -16,6 +16,8 @@ import { isAuthenticated, isAdmin } from "../middlewares/auth.js";
 import { singleUpload } from "../middlewares/multer.js";
 import { voteProduct, likeProduct } from "../controllers/product.js";
 
+import { addAssetToProduct } from "../controllers/productController.js";
+
 const router = express.Router();
 
 router.get("/all", getAllProducts);
@@ -50,5 +52,7 @@ router.put("/:id/like", isAuthenticated, likeProduct);
 
 // Route pour liker
 //router.put("/product/:id/like", isAuthenticated, likeProduct);
+router.put("/:id/addAsset", isAuthenticated, addAssetToProduct);
+
 
 export default router;
