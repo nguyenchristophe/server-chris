@@ -52,6 +52,21 @@ const schema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+    // 🟢 Nouveau champ, liste d’assets liés à ce poème
+  assetsSelected: [
+    {
+      asset: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Asset",
+        required: true,
+      },
+      // En cas de besoin, on peut stocker un surcoût final (calculé au moment de la sélection)
+      extraCost: {
+        type: Number,
+        default: 0,
+      },
+    },
+  ],
 
   createdAt: {
     type: Date,
