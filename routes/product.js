@@ -11,12 +11,15 @@ import {
   getAllProducts,
   getProductDetails,
   updateProduct,
+  rentPoem
 } from "../controllers/product.js";
 import { isAuthenticated, isAdmin } from "../middlewares/auth.js";
 import { singleUpload } from "../middlewares/multer.js";
 import { voteProduct, likeProduct } from "../controllers/product.js";
 
 import { addAssetToProduct } from "../controllers/productController.js";
+
+
 
 const router = express.Router();
 
@@ -53,6 +56,8 @@ router.put("/:id/like", isAuthenticated, likeProduct);
 // Route pour liker
 //router.put("/product/:id/like", isAuthenticated, likeProduct);
 router.put("/:id/addAsset", isAuthenticated, addAssetToProduct);
+
+router.post("/:id/rent", isAuthenticated, rentPoem);
 
 
 export default router;
