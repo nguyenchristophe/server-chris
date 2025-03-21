@@ -5,6 +5,8 @@ import { getDataUri } from "../utils/features.js";
 import cloudinary from "cloudinary";
 import { Category } from "../models/category.js";
 
+import { Asset } from "../models/asset.js";
+
 export const getAllProducts = asyncError(async (req, res, next) => {
   const { keyword, category } = req.query;
 
@@ -254,8 +256,44 @@ export const deleteCategory = asyncError(async (req, res, next) => {
 
   await category.remove();
 
+  
+
   res.status(200).json({
     success: true,
     message: "Catégorie supprimée avec succès",
+  });
+});
+
+export const addAssetToProduct = asyncError(async (req, res, next) => {
+  const productId = req.params.id;
+  const { assetId } = req.body;  // L’asset qu’on veut attacher
+
+  const product = await Product.findById(productId);
+  if (!product) return next(new ErrorHandler("Poème/Produit introuvable", 404));
+
+  const asset = await Asset.findById(assetId);
+  if (!asset) return next(new ErrorHandler("Asset introuvable", 404));
+
+  // Calcul du surcoût si besoin
+  let extraCost = 0;
+  if (asset.priceType === "fix") {
+    extraCost = asset.price;
+  } else if (asset.priceType === "percent") {
+    // Ex: +10 % du prix du poème
+    extraCost = (product.price * asset.price) / 100;
+  }
+
+  // On stocke l'asset avec extraCost
+  product.assetsSelected.push({
+    asset: asset._id,
+    extraCost,
+  });
+
+  await product.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Asset ajouté au poème avec succès",
+    assetsSelected: product.assetsSelected,
   });
 });
