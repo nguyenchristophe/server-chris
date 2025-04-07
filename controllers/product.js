@@ -312,6 +312,16 @@ export const rentPoem = asyncError(async (req, res, next) => {
 
   // Ici, tu peux lancer un paiement Stripe, PayPal...
   // Ex: const paymentIntent = await stripe.paymentIntents.create({ ... totalPrice... })
+  // ---- Étape de paiement (Stripe, PayPal, etc.) ----
+  // Ici vous pouvez lancer un paiement par ex. Stripe:
+  // const paymentIntent = await stripe.paymentIntents.create({...})
+  // ou tout autre service.
+
+  // Une fois que le paiement est validé, on peut marquer la location comme effectuée,
+  // et effectuer le split des revenus entre owners.
+
+  // Exemple: tout transite d’abord via le compte du Poète,
+  // puis il reverse un pourcentage à chaque owner d’asset.
 
   res.status(200).json({
     success: true,
