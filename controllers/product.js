@@ -329,3 +329,12 @@ export const rentPoem = asyncError(async (req, res, next) => {
     message: `Poème loué. Prix total : ${totalPrice} €`,
   });
 });
+
+// controllers/product.js
+export const getMyPoems = asyncError(async (req, res, next) => {
+  const products = await Product.find({ owner: req.user._id });
+  res.status(200).json({
+    success: true,
+    products,
+  });
+});
