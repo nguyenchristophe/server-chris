@@ -18,7 +18,7 @@ import { singleUpload } from "../middlewares/multer.js";
 import { voteProduct, likeProduct } from "../controllers/product.js";
 
 import { addAssetToProduct } from "../controllers/product.js";
-import { isAuthenticated, } from "../middlewares/auth.js";
+
 
 
 
