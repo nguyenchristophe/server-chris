@@ -61,5 +61,8 @@ router.put("/:id/addAsset", isAuthenticated, addAssetToProduct);
 
 router.post("/:id/rent", isAuthenticated, rentPoem);
 
+router.get("/my-poems", isAuthenticated, getMyPoems);
+
+
 
 export default router;
