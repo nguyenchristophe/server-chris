@@ -13,7 +13,7 @@ import {
   updateProduct,
   rentPoem
 } from "../controllers/product.js";
-import { isAuthenticated, isPoetOrAdmin, isOwnerOrAdmin } from "../middlewares/auth.js";
+import { isAuthenticated, isPoetOrAdmin, isOwnerOrAdmin, isAdmin} from "../middlewares/auth.js";
 import { singleUpload } from "../middlewares/multer.js";
 import { voteProduct, likeProduct } from "../controllers/product.js";
 
