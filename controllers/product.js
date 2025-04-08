@@ -62,6 +62,7 @@ export const createProduct = asyncError(async (req, res, next) => {
   };
 
   await Product.create({
+    owner: req.user._id,    
     name,
     description,
     category,
