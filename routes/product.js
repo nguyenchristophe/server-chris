@@ -13,7 +13,7 @@ import {
   updateProduct,
   rentPoem
 } from "../controllers/product.js";
-import { isAuthenticated, isAdmin , isPoetOrAdmin  } from "../middlewares/auth.js";
+import { isAuthenticated, isPoetOrAdmin  } from "../middlewares/auth.js";
 import { singleUpload } from "../middlewares/multer.js";
 import { voteProduct, likeProduct } from "../controllers/product.js";
 
@@ -33,7 +33,7 @@ router
   .put(isAuthenticated, isOwnerOrAdmin, updateProduct)
   .delete(isAuthenticated, isOwnerOrAdmin, deleteProduct);
 
-router.post("/new", isAuthenticated, isAdmin, isPoetOrAdmin, singleUpload, createProduct);
+router.post("/new", isAuthenticated, isPoetOrAdmin, singleUpload, createProduct);
 
 
 router
