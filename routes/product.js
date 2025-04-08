@@ -30,8 +30,8 @@ router.get("/admin", isAuthenticated, isAdmin, getAdminProducts);
 router
   .route("/single/:id")
   .get(getProductDetails)
-  .put(isAuthenticated, isAdmin, updateProduct)
-  .delete(isAuthenticated, isAdmin, deleteProduct);
+  .put(isAuthenticated, isOwnerOrAdmin, updateProduct)
+  .delete(isAuthenticated, isOwnerOrAdmin, deleteProduct);
 
 router.post("/new", isAuthenticated, isAdmin, isPoetOrAdmin, singleUpload, createProduct);
 
