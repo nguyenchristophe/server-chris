@@ -5,6 +5,12 @@ const schema = new mongoose.Schema({
     type: String,
     required: [true, "Please Enter Name"],
   },
+   owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    // on peut le rendre obligatoire
+    required: true,
+  },
   description: {
     type: String,
     required: [true, "Please Enter Description"],
