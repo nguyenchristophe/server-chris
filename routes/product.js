@@ -25,7 +25,7 @@ import { addAssetToProduct } from "../controllers/product.js";
 const router = express.Router();
 
 router.get("/all", getAllProducts);
-//router.get("/admin", isAuthenticated, isAdmin, getAdminProducts);
+router.get("/admin", isAuthenticated, isAdmin, getAdminProducts);
 
 router
   .route("/single/:id")
