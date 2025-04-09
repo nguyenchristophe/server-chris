@@ -16,7 +16,7 @@ export const getAllProducts = asyncError(async (req, res, next) => {
       $options: "i",
     },
     category: category ? category : undefined,
-  });
+  }).populate("owner");
 
   res.status(200).json({
     success: true,
