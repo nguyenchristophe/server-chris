@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import chatRoutes from "./routes/chatRoutes.js";
 
+
 config({
   path: "./data/config.env",
 });
@@ -30,12 +31,14 @@ app.get("/", (req, res, next) => {
 import user from "./routes/user.js";
 import product from "./routes/product.js";
 import order from "./routes/order.js";
+import asset from "./routes/asset.js"; 
 
 
 app.use("/api/v1/user", user);
 app.use("/api/v1/product", product);
 app.use("/api/v1/order", order);
 app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/asset", asset);  // <- Montage du routeur asset
 
 // Using Error Middleware
 app.use(errorMiddleware);
