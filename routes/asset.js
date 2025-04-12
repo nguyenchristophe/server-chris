@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.get("/all", isAuthenticated, getAllAssets);
 // Création d’un asset
-router.post("/asset/new", isAuthenticated, createAsset);
+router.post("/new", isAuthenticated, createAsset);
 // routes/asset.js
 router.get("/my-assets", isAuthenticated, getMyAssets); 
 
