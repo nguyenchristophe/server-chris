@@ -7,6 +7,7 @@ import { updateAsset } from "../controllers/assetController.js";
 import { deleteAsset } from "../controllers/assetController.js";
 
 import { isAuthenticated } from "../middlewares/auth.js";
+import { singleUpload } from "../middlewares/multer.js";
 
 const router = express.Router();
 
