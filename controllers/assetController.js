@@ -38,3 +38,38 @@ export const getMyAssets = asyncError(async (req, res, next) => {
   res.status(200).json({ success: true, assets });
 });
 
+// controllers/assetController.js
+export const updateAsset = asyncError(async (req, res, next) => {
+  const asset = await Asset.findById(req.params.id);
+  if (!asset) return next(new ErrorHandler("Asset introuvable", 404));
+
+  // Vérifier ownership
+  if (asset.owner.toString() !== req.user._id.toString()) {
+    return next(new ErrorHandler("Accès refusé.", 403));
+  }
+
+  const { name, price, priceType, type, previewUrl } = req.body;
+  if (name) asset.name = name;
+  if (price) asset.price = price;
+  if (priceType) asset.priceType = priceType;
+  if (type) asset.type = type;
+  if (previewUrl) asset.previewUrl = previewUrl;
+
+  await asset.save();
+
+  res.json({ success: true, message: "Asset modifié" });
+});
+
+export const deleteAsset = asyncError(async (req, res, next) => {
+  const asset = await Asset.findById(req.params.id);
+  if (!asset) return next(new ErrorHandler("Asset introuvable", 404));
+
+  if (asset.owner.toString() !== req.user._id.toString()) {
+    return next(new ErrorHandler("Accès refusé.", 403));
+  }
+  await asset.remove();
+
+  res.json({ success: true, message: "Asset supprimé" });
+});
+
+
