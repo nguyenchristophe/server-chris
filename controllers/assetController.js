@@ -33,5 +33,8 @@ export const getAllAssets = asyncError(async (req, res, next) => {
   const assets = await Asset.find({});
   res.status(200).json({ success: true, assets });
 });
-
+export const getMyAssets = asyncError(async (req, res, next) => {
+  const assets = await Asset.find({ owner: req.user._id });
+  res.status(200).json({ success: true, assets });
+});
 
