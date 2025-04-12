@@ -20,7 +20,7 @@ router.post("/new", isAuthenticated, singleUpload, createAsset);
 router.get("/my-assets", isAuthenticated, getMyAssets); 
 
 // routes/asset.js
-router.put("/:id", isAuthenticated, updateAsset);
+router.put("/:id", isAuthenticated, singleUpload , updateAsset);
 router.delete("/:id", isAuthenticated, deleteAsset);
 
 
