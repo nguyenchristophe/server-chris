@@ -6,38 +6,44 @@ import { getDataUri } from "../utils/features.js";
 
 
 export const createAsset = asyncError(async (req, res, next) => {
+  console.log("createAsset appelé, req.body =", req.body);
+  console.log("req.file =", req.file);
+
   const { name, type, price, priceType } = req.body;
-  const owner = req.user._id; // L'utilisateur connecté
+  const owner = req.user._id;
 
   if (!name) {
     return next(new ErrorHandler("Le nom de l'asset est requis", 400));
   }
 
-  // Si un fichier est uploadé, l'envoyer à Cloudinary et récupérer l'URL
   let previewUrl = "";
   if (req.file) {
     const file = getDataUri(req.file);
     const myCloud = await cloudinary.v2.uploader.upload(file.content, {
-      folder: "assets", // Optionnel : dossier dans Cloudinary
+      folder: "assets",
     });
     previewUrl = myCloud.secure_url;
   }
 
-  // Création de l'asset en enregistrant également previewUrl
-  const asset = await Asset.create({
-    name,
-    type,
-    owner,
-    price,
-    priceType,
-    previewUrl,
-  });
-
-  res.status(201).json({
-    success: true,
-    message: "Asset créé avec succès",
-    asset,
-  });
+  try {
+    const asset = await Asset.create({
+      name,
+      type,
+      owner,
+      price,
+      priceType,
+      previewUrl,
+    });
+    console.log("Asset créé :", asset);
+    res.status(201).json({
+      success: true,
+      message: "Asset créé avec succès",
+      asset,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la création de l'asset :", error);
+    return next(new ErrorHandler("Une erreur est survenue lors de la création de l'asset", 500));
+  }
 });
 export const getAllAssets = asyncError(async (req, res, next) => {
   const assets = await Asset.find({});
