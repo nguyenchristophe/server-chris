@@ -1,6 +1,11 @@
 // routes/asset.js
 import express from "express";
 import { getAllAssets } from "../controllers/assetController.js";
+import { createAsset } from "../controllers/assetController.js";
+import {getMyAssets } from "../controllers/assetController.js";
+import { updateAsset } from "../controllers/assetController.js";
+import { deleteAsset } from "../controllers/assetController.js";
+
 import { isAuthenticated } from "../middlewares/auth.js";
 
 const router = express.Router();
