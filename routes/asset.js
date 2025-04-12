@@ -11,5 +11,10 @@ router.post("/new", isAuthenticated, createAsset);
 // routes/asset.js
 router.get("/my-assets", isAuthenticated, getMyAssets); 
 
+// routes/asset.js
+router.put("/:id", isAuthenticated, updateAsset);
+router.delete("/:id", isAuthenticated, deleteAsset);
+
+
 
 export default router;
