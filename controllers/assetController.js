@@ -1,19 +1,29 @@
 import { Asset } from "../models/asset.js";
 import { asyncError } from "../middlewares/error.js";
+import ErrorHandler from "../utils/error.js";
+import cloudinary from "cloudinary";
+import { getDataUri } from "../utils/features.js";
 
 
-// Création d’un nouvel asset
 export const createAsset = asyncError(async (req, res, next) => {
-  const { name, type, price, priceType, previewUrl } = req.body;
-
-  // L'owner de l'asset = user authentifié
-  const owner = req.user._id;
+  const { name, type, price, priceType } = req.body;
+  const owner = req.user._id; // L'utilisateur connecté
 
   if (!name) {
     return next(new ErrorHandler("Le nom de l'asset est requis", 400));
   }
 
-  // Crée l’asset
+  // Si un fichier est uploadé, l'envoyer à Cloudinary et récupérer l'URL
+  let previewUrl = "";
+  if (req.file) {
+    const file = getDataUri(req.file);
+    const myCloud = await cloudinary.v2.uploader.upload(file.content, {
+      folder: "assets", // Optionnel : dossier dans Cloudinary
+    });
+    previewUrl = myCloud.secure_url;
+  }
+
+  // Création de l'asset en enregistrant également previewUrl
   const asset = await Asset.create({
     name,
     type,
