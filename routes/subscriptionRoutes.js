@@ -6,7 +6,9 @@ import Stripe from "stripe";
 import { isAuthenticated } from "../middlewares/auth.js"; // Assurez-vous que ce middleware définit req.user
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+//const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_API_SECRET);
+
 
 // Définition des montants pour chaque plan (en centimes)
 const validSubscriptions = {
