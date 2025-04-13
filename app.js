@@ -4,6 +4,7 @@ import { errorMiddleware } from "./middlewares/error.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import chatRoutes from "./routes/chatRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 
 
 config({
@@ -42,3 +43,4 @@ app.use("/api/v1/asset", asset);  // <- Montage du routeur asset
 
 // Using Error Middleware
 app.use(errorMiddleware);
+app.use("/subscription", subscriptionRoutes);
