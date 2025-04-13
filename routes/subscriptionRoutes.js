@@ -26,21 +26,24 @@ const validSubscriptions = {
 
 router.post(
   "/create-payment-intent",
-  isAuthenticated, // assure que req.user est défini
+  isAuthenticated, // Assure que req.user est défini
   asyncError(async (req, res, next) => {
+    // Afficher la valeur reçue pour le débogage
+    console.log("Valeur reçue pour subscription:", req.body.subscription);
+    
     const { subscription } = req.body;
-
     if (!subscription) {
       return next(new ErrorHandler("Le type d'abonnement est requis", 400));
     }
+    
+    // Vérifier que la valeur reçue appartient bien aux abonnements valides
     if (!validSubscriptions.hasOwnProperty(subscription)) {
       return next(new ErrorHandler("Type d'abonnement non valide", 400));
     }
-
-    // Déterminer le montant en centimes
+    
     const amount = validSubscriptions[subscription];
-
-    // Si l'abonnement est gratuit, vous pouvez renvoyer directement un message
+    
+    // Si l'abonnement est gratuit, renvoyer une réponse sans PaymentIntent
     if (amount === 0) {
       return res.status(200).json({
         success: true,
@@ -50,13 +53,13 @@ router.post(
         customer: null,
       });
     }
-
-    // Assurez-vous que req.user existe (grâce à isAuthenticated)
+    
+    // Vérifier que req.user existe grâce au middleware isAuthenticated
     if (!req.user) {
       return next(new ErrorHandler("Utilisateur non authentifié", 401));
     }
-
-    // Récupérer ou créer un client Stripe
+    
+    // Récupérer ou créer un customer Stripe pour l'utilisateur connecté
     let customerId = req.user.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -64,30 +67,27 @@ router.post(
         name: req.user.name,
       });
       customerId = customer.id;
-      // Mettez à jour votre base de données avec le stripeCustomerId pour cet utilisateur
-      // Par exemple : await User.findByIdAndUpdate(req.user._id, { stripeCustomerId: customerId });
-      console.log("Customer créé :", customerId);
+      // Mettez ici le code pour enregistrer customerId dans la base pour l'utilisateur
+      console.log("Customer Stripe créé :", customerId);
     }
-
-    // Créer le PaymentIntent
+    
+    // Création du PaymentIntent avec Stripe
     const paymentIntent = await stripe.paymentIntents.create({
-      amount, // montant en centimes
+      amount,
       currency: "eur",
       customer: customerId,
       automatic_payment_methods: {
         enabled: true,
       },
-      metadata: {
-        subscriptionType: subscription,
-      },
+      metadata: { subscriptionType: subscription },
     });
-
-    // Créer une clé éphémère pour utiliser avec le PaymentSheet
+    
+    // Création d'une clé éphémère pour le PaymentSheet
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { customer: customerId },
       { apiVersion: "2022-11-15" }
     );
-
+    
     res.status(200).json({
       success: true,
       paymentIntent: paymentIntent.client_secret,
@@ -96,5 +96,6 @@ router.post(
     });
   })
 );
+
 
 export default router;
