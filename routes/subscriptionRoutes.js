@@ -2,32 +2,34 @@
 import express from "express";
 import { asyncError } from "../middlewares/error.js";
 import ErrorHandler from "../utils/error.js";
+import { isAuthenticated } from "../middlewares/auth.js";
 import Stripe from "stripe";
-import { isAuthenticated } from "../middlewares/auth.js"; // Assurez-vous que ce middleware définit req.user
+
+// Initialisation de Stripe avec la clé secrète
+const stripe = new Stripe(process.env.STRIPE_API_SECRET || process.env.STRIPE_API_KEY, {
+  apiVersion: "2022-11-15",
+});
 
 const router = express.Router();
-//const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const stripe = new Stripe(process.env.STRIPE_API_SECRET);
 
-
-// Définition des montants pour chaque plan (en centimes)
+// Mapping des abonnements vers des montants en centimes
 const validSubscriptions = {
-  neutral: 0,           // Gratuit
-  visionnaire: 500,     // 5€ par mois
-  createur: 900,        // 9€ par mois
-  innovateur: 1300,     // 13€ par mois
-  externes_basic: 15000,    // 150€ par mois
-  externes_semi_basic: 25000, // 250€ par mois
-  externes_must: 50000,       // 500€ par mois
-  must_innovateurs: 30000,    // 300€ par mois
+  neutral: 0,
+  visionnaire: 500,
+  createur: 900,
+  innovateur: 1300,
+  externes_basic: 15000,
+  externes_semi_basic: 25000,
+  externes_must: 50000,
+  must_innovateurs: 30000,
 };
 
-// Route pour créer le PaymentIntent (pour Stripe)
 router.post(
   "/create-payment-intent",
-  isAuthenticated, // Ajout du middleware d'authentification pour s'assurer que req.user existe
+  isAuthenticated, // assure que req.user est défini
   asyncError(async (req, res, next) => {
     const { subscription } = req.body;
+
     if (!subscription) {
       return next(new ErrorHandler("Le type d'abonnement est requis", 400));
     }
@@ -35,9 +37,10 @@ router.post(
       return next(new ErrorHandler("Type d'abonnement non valide", 400));
     }
 
+    // Déterminer le montant en centimes
     const amount = validSubscriptions[subscription];
 
-    // Si l'abonnement est gratuit, inutile de créer un PaymentIntent
+    // Si l'abonnement est gratuit, vous pouvez renvoyer directement un message
     if (amount === 0) {
       return res.status(200).json({
         success: true,
@@ -48,26 +51,25 @@ router.post(
       });
     }
 
-    // Assurez-vous que req.user est défini par le middleware d'authentification
+    // Assurez-vous que req.user existe (grâce à isAuthenticated)
     if (!req.user) {
       return next(new ErrorHandler("Utilisateur non authentifié", 401));
     }
 
-    // Récupérer ou créer un customer Stripe pour l'utilisateur connecté
+    // Récupérer ou créer un client Stripe
     let customerId = req.user.stripeCustomerId;
     if (!customerId) {
-      // Créer un client Stripe
       const customer = await stripe.customers.create({
         email: req.user.email,
         name: req.user.name,
       });
       customerId = customer.id;
-      // Ici, vous devriez mettre à jour votre base de données pour enregistrer customerId
+      // Mettez à jour votre base de données avec le stripeCustomerId pour cet utilisateur
       // Par exemple : await User.findByIdAndUpdate(req.user._id, { stripeCustomerId: customerId });
-      console.log("Customer Stripe créé, id:", customerId);
+      console.log("Customer créé :", customerId);
     }
 
-    // Création du PaymentIntent
+    // Créer le PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount, // montant en centimes
       currency: "eur",
@@ -80,7 +82,7 @@ router.post(
       },
     });
 
-    // Création d'une clé éphémère pour la PaymentSheet
+    // Créer une clé éphémère pour utiliser avec le PaymentSheet
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { customer: customerId },
       { apiVersion: "2022-11-15" }
