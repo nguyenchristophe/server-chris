@@ -43,4 +43,5 @@ app.use("/api/v1/asset", asset);  // <- Montage du routeur asset
 
 // Using Error Middleware
 app.use(errorMiddleware);
-app.use("/subscription", subscriptionRoutes);
+//app.use("/subscription", subscriptionRoutes);
+app.use("/api/v1/subscription", subscriptionRoutes);
