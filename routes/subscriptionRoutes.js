@@ -30,6 +30,9 @@ router.post(
   asyncError(async (req, res, next) => {
     // Afficher la valeur reçue pour le débogage
     console.log("Valeur reçue pour subscription:", req.body.subscription);
+    console.log("Requête reçue:", req.body);
+    
+
     
     const { subscription } = req.body;
     if (!subscription) {
