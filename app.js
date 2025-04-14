@@ -33,6 +33,13 @@ import user from "./routes/user.js";
 import product from "./routes/product.js";
 import order from "./routes/order.js";
 import asset from "./routes/asset.js"; 
+app.use((req, res, next) => {
+  console.log("Requête URL:", req.url);
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  next();
+});
+
 
 
 app.use("/api/v1/user", user);
