@@ -8,7 +8,7 @@ import Stripe from "stripe";
 
 config({ path: "./data/config.env" });
 
-// Initialisation de Stripe avec votre clé API (assurez-vous d'avoir défini STRIPE_API_SECRET correctement)
+// Initialisation de Stripe avec la clé secrète (vérifiez que STRIPE_API_SECRET est défini dans votre .env sans guillemets)
 const stripe = new Stripe(process.env.STRIPE_API_SECRET);
 
 const router = express.Router();
@@ -22,14 +22,14 @@ const requireBearerAuth = (req, res, next) => {
       message: "Authorization header missing or invalid. Must be Bearer token.",
     });
   }
-  // Optionnel : vous pouvez extraire le token et le vérifier par exemple avec jwt.verify, si nécessaire.
+  // Optionnel : vous pouvez extraire et vérifier le token ici
   next();
 };
 
-// Vous pouvez appliquer le middleware requireBearerAuth pour toutes les routes de ce routeur ou seulement pour certaines
+// Appliquer ce middleware à toutes les routes de ce routeur
 router.use(requireBearerAuth);
 
-// Définir les montants pour chaque plan (en centimes)
+// Mapping des abonnements vers des montants (en centimes)
 const validSubscriptions = {
   neutral: 0,
   visionnaire: 500,
@@ -43,13 +43,13 @@ const validSubscriptions = {
 
 router.post(
   "/create-payment-intent",
-  isAuthenticated, // Assure que req.user est défini
+  isAuthenticated, // Le middleware d'authentification doit définir req.user
   asyncError(async (req, res, next) => {
+    // Affichage pour débogage du contenu de la requête
     console.log("Requête reçue:", req.body);
     console.log("Valeur reçue pour subscription:", req.body.subscription);
 
     const { subscription } = req.body;
-
     if (!subscription) {
       return next(new ErrorHandler("Le type d'abonnement est requis", 400));
     }
@@ -74,15 +74,17 @@ router.post(
 
     let customerId = req.user.stripeCustomerId;
     if (!customerId) {
+      // Création du customer Stripe pour l'utilisateur
       const customer = await stripe.customers.create({
         email: req.user.email,
         name: req.user.name,
       });
       customerId = customer.id;
-      // Ici, enregistrez customerId dans la DB pour l'utilisateur
+      // Ici, enregistrez customerId dans votre DB pour l'utilisateur (par exemple, via User.findByIdAndUpdate)
       console.log("Customer Stripe créé:", customerId);
     }
 
+    // Création du PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "eur",
@@ -91,6 +93,7 @@ router.post(
       metadata: { subscriptionType: subscription },
     });
 
+    // Création d'une clé éphémère pour le PaymentSheet
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { customer: customerId },
       { apiVersion: "2022-11-15" }
