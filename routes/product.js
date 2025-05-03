@@ -57,7 +57,12 @@ router.put("/:id/like", isAuthenticated, likeProduct);
 
 // Route pour liker
 //router.put("/product/:id/like", isAuthenticated, likeProduct);
-router.put("/:id/addAsset", isAuthenticated, addAssetToProduct);
+router.put(
+  "/:id/asset",             // <— correspond à `axios.put(\`\${server}/product/${poemId}/asset\`, …)`
+  isAuthenticated,
+  addAssetToProduct
+);
+//router.put("/:id/addAsset", isAuthenticated, addAssetToProduct);
 
 router.post("/:id/rent", isAuthenticated, rentPoem);
 
