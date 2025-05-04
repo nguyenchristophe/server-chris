@@ -330,17 +330,18 @@ export const rentPoem = asyncError(async (req, res, next) => {
   });
 });
 
-// avant controllers/product.js
- export const getMyPoems = asyncError(async (req, res, next) => {
-  //const products = await Product.find({ owner: req.user._id });
-   const products = await Product
-  .find({ owner: req.user._id })
-  .populate("assetsSelected.asset", "name"); // on ne récupère que le champ name de l'Asset
+
+
+export const getMyPoems = asyncError(async (req, res, next) => {
+  const products = await Product.find({ owner: req.user._id })
+    .populate("assetsSelected.asset")    // ← ici on peuple l’asset
+    .populate("images")                   // si besoin d’images
+    .populate("owner", "name");           // par exemple
   res.status(200).json({
     success: true,
     products,
   });
-}); 
+});
 
 
 
