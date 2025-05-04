@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import chatRoutes from "./routes/chatRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
+import playlistRoutes from "./routes/playlist.js";
 
 
 config({
@@ -52,3 +53,5 @@ app.use("/api/v1/asset", asset);  // <- Montage du routeur asset
 app.use(errorMiddleware);
 //app.use("/subscription", subscriptionRoutes);
 app.use("/api/v1/subscription", subscriptionRoutes);
+
+app.use("/api/v1/playlist", playlistRoutes);
