@@ -11,8 +11,7 @@ import {
 const router = express.Router();
 
 router.post("/", isAuthenticated, createPlaylist);
-// routes/playlist.js
-router.post("/create", isAuthenticated, createPlaylist);
+
 
 router.get("/me", isAuthenticated, getMyPlaylists);
 router.put("/:id/add", isAuthenticated, addPoemToPlaylist);
