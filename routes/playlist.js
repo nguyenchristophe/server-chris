@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", isAuthenticated, createPlaylist);
+router.post("/create", isAuthenticated, createPlaylist);
 
 
 router.get("/me", isAuthenticated, getMyPlaylists);
