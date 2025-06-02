@@ -5,6 +5,11 @@ import { asyncError } from "../middlewares/error.js";
 
 export const createPlaylist = asyncError(async (req, res, next) => {
   // Contrôler l'abonnement utilisateur si nécessaire
+
+  // Si req.body.name est manquant, on renverra une exception ou on valide
+  if (!req.body.name || !req.body.name.trim()) {
+    return next(new ErrorHandler("Le nom de la playlist est requis", 400));
+  }
   const playlist = await Playlist.create({
     name: req.body.name,
     owner: req.user._id,
