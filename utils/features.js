@@ -19,8 +19,16 @@ export const sendToken = (user, res, message, statusCode) => {
     })
     .json({
       success: true,
-      message: message,
-      user,
+      message,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        subscription: user.subscription,
+        // … tout autre champ que vous voulez exposer
+      },
+      token,    // ← on renvoie le JWT ici
     });
 };
 
