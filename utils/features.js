@@ -1,3 +1,4 @@
+// utils/features.js
 import DataUriParser from "datauri/parser.js";
 import path from "path";
 import { createTransport } from "nodemailer";
@@ -15,7 +16,7 @@ export const sendToken = (user, res, message, statusCode) => {
     .status(statusCode)
     .cookie("token", token, {
       ...cookieOptions,
-      expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 jours
     })
     .json({
       success: true,
@@ -26,7 +27,7 @@ export const sendToken = (user, res, message, statusCode) => {
         email: user.email,
         role: user.role,
         subscription: user.subscription,
-        // … tout autre champ que vous voulez exposer
+        // … tout autre champ à exposer
       },
       token,    // ← on renvoie le JWT ici
     });
