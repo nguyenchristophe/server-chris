@@ -6,12 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "Set NODE_ENV=Development&& nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "node utils/generateMetadata.js"
   },
-  "scripts": {
-  "postinstall": "node utils/generateMetadata.js"
-},
-  "author": "",
+   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
