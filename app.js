@@ -6,7 +6,7 @@ import cors from "cors";
 import chatRoutes from "./routes/chatRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import playlistRoutes from "./routes/playlist.js";
-import fanLicensesRoutes from "./routes/fanLicensesRoutes.js";
+import fanlicensesroutes from "./routes/fanLicensesRoutes.js";
 
 
 
@@ -51,7 +51,7 @@ app.use("/api/v1/order", order);
 app.use("/api/v1/chat", chatRoutes);
 app.use("/api/v1/asset", asset);  // <- Montage du routeur asset
 
-app.use("/api/v1/mint-license", fanLicensesRoutes);
+app.use("/api/v1/mint-license", fanlicensesroutes);
 
 
 // Using Error Middleware
