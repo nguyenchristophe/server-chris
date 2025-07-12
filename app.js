@@ -6,7 +6,7 @@ import cors from "cors";
 import chatRoutes from "./routes/chatRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import playlistRoutes from "./routes/playlist.js";
-import fanlicensesroutes from "./routes/fanLicensesRoutes.js";
+import fanlicensesroutes from "./routes/mintLicence.js";
 
 
 
