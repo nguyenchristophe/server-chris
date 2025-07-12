@@ -6,6 +6,8 @@ import cors from "cors";
 import chatRoutes from "./routes/chatRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import playlistRoutes from "./routes/playlist.js";
+import fanLicenseRoutes from "./routes/fanLicenseRoutes.js";
+
 
 
 config({
