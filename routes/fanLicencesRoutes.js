@@ -1,8 +1,8 @@
 import express from "express";
-import { mintLicense } from "../controllers/fanLicenseController.js";
+import { mintLicenseController } from "../controllers/fanLicenseController.js";
 
 const router = express.Router();
 
-router.post("/mint-license", mintLicense);
+router.post("/mint-license", mintLicenseController);
 
 export default router;
