@@ -1,5 +1,8 @@
 import { ethers } from "ethers";
-import FanLicenseABI from "../abis/FanLicense.json" assert { type: "json" };
+
+import fs from "fs";
+const FanLicenseABI = JSON.parse(fs.readFileSync("./abis/FanLicense.json", "utf8"));
+
 
 const provider = new ethers.JsonRpcProvider("https://spicy-rpc.chiliz.com");
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
