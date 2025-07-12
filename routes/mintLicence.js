@@ -1,8 +1,7 @@
-// backend/routes/mintLicense.js
 const express = require("express");
 const router = express.Router();
 const { mintLicense } = require("../controllers/fanLicenseController");
 
-router.post("/", mintLicense);
+router.post("/mint-license", mintLicense);
 
 module.exports = router;
