@@ -51,7 +51,7 @@ app.use("/api/v1/order", order);
 app.use("/api/v1/chat", chatRoutes);
 app.use("/api/v1/asset", asset);  // <- Montage du routeur asset
 
-app.use("/api/v1/mint-licence", fanlicencesroutes);
+app.use("/api/v1/mint-license", fanlicencesroutes);
 
 
 // Using Error Middleware
