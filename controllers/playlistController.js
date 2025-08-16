@@ -60,3 +60,49 @@ export const incrementView = asyncError(async (req, res, next) => {
   await playlist.save();
   res.json({ success: true, views: entry.views });
 });
+
+// PUT /api/v1/playlist/:id/order
+export const updatePlaylistOrder = asyncError(async (req, res, next) => {
+  const { id } = req.params;
+  const { order } = req.body; // [{ poemId, order }, ...]
+
+  const playlist = await Playlist.findById(id);
+  if (!playlist) return next(new ErrorHandler("Playlist introuvable", 404));
+  if (!playlist.owner.equals(req.user._id)) return next(new ErrorHandler("Accès refusé", 403));
+  if (!Array.isArray(order)) return next(new ErrorHandler("Format d'ordre invalide", 400));
+
+  const mapOrder = {};
+  order.forEach(o => {
+    if (o && o.poemId) mapOrder[o.poemId.toString()] = Number(o.order) || 0;
+  });
+
+  playlist.poems.sort((a, b) => {
+    const ao = mapOrder[a.poem.toString()];
+    const bo = mapOrder[b.poem.toString()];
+    if (typeof ao === "number" && typeof bo === "number") return ao - bo;
+    if (typeof ao === "number") return -1;
+    if (typeof bo === "number") return 1;
+    return 0;
+  });
+
+  await playlist.save();
+  const populated = await Playlist.findById(id).populate("poems.poem");
+  res.json({ success: true, playlist: populated });
+});
+
+// PUT /api/v1/playlist/:id/meta
+export const updatePlaylistMeta = asyncError(async (req, res, next) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
+
+  const playlist = await Playlist.findById(id);
+  if (!playlist) return next(new ErrorHandler("Playlist introuvable", 404));
+  if (!playlist.owner.equals(req.user._id)) return next(new ErrorHandler("Accès refusé", 403));
+
+  if (typeof name === "string" && name.trim()) playlist.name = name.trim();
+  if (typeof description === "string") playlist.description = description;
+
+  await playlist.save();
+  const populated = await Playlist.findById(id).populate("poems.poem");
+  res.json({ success: true, playlist: populated });
+});
