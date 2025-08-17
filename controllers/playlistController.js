@@ -18,8 +18,17 @@ export const createPlaylist = asyncError(async (req, res, next) => {
   res.status(201).json({ success: true, playlist });
 });
 
-export const getMyPlaylists = asyncError(async (req, res, next) => {
+/*export const getMyPlaylists = asyncError(async (req, res, next) => {
   const playlists = await Playlist.find({ owner: req.user._id }).populate("poems.poem");
+  res.status(200).json({ success: true, playlists });
+});*/
+export const getMyPlaylists = asyncError(async (req, res, next) => {
+  const playlists = await Playlist.find({ owner: req.user._id })
+    .populate({
+      path: "poems.poem",
+      populate: { path: "assetsSelected.asset" }, // ← on peuple les assets du poème
+    });
+
   res.status(200).json({ success: true, playlists });
 });
 
