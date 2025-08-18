@@ -1,18 +1,18 @@
-// models/contestVote.js
 import mongoose from "mongoose";
 
-const voteSchema = new mongoose.Schema(
+const contestVoteSchema = new mongoose.Schema(
   {
-    contest: { type: mongoose.Schema.Types.ObjectId, ref: "Contest", required: true },
-    submission: { type: mongoose.Schema.Types.ObjectId, ref: "ContestSubmission", required: true },
-    voter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    contest:    { type: mongoose.Schema.Types.ObjectId, ref: "Contest", required: true, index: true },
+    submission: { type: mongoose.Schema.Types.ObjectId, ref: "ContestSubmission", required: true, index: true },
+    voter:      { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
-    weight: { type: Number, default: 1 }, // selon l’abonnement
+    // pondération (1 = vote simple ; >1 si pondéré)
+    weight: { type: Number, default: 1 },
   },
   { timestamps: true }
 );
 
-// Empêche double vote du même user sur la même submission
-voteSchema.index({ submission: 1, voter: 1 }, { unique: true });
+// 1 vote par utilisateur et par submission
+contestVoteSchema.index({ contest: 1, submission: 1, voter: 1 }, { unique: true });
 
-export const ContestVote = mongoose.model("ContestVote", voteSchema);
+export const ContestVote = mongoose.model("ContestVote", contestVoteSchema);
