@@ -7,7 +7,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import playlistRoutes from "./routes/playlist.js";
 import fanlicencesroutes from "./routes/mintLicence.js";
-
+import contestRoutes from "./routes/contest.js"
 
 
 config({
@@ -53,6 +53,7 @@ app.use("/api/v1/asset", asset);  // <- Montage du routeur asset
 
 app.use("/api/v1", fanlicencesroutes);
 
+app.use("/api/v1/contest", contestRoutes);
 
 // Using Error Middleware
 app.use(errorMiddleware);
