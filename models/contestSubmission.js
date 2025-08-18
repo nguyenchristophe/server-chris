@@ -1,30 +1,28 @@
-// models/contestSubmission.js
 import mongoose from "mongoose";
 
-const submissionSchema = new mongoose.Schema(
+const contestSubmissionSchema = new mongoose.Schema(
   {
+    // rattachement
     contest: { type: mongoose.Schema.Types.ObjectId, ref: "Contest", required: true },
-    creator: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
-    // Type d’œuvre + rattachement à vos modèles existants
-    kind: { type: String, enum: ["poem", "image", "audio"], required: true },
-    productRef: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // poème existant
-    assetRefs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Asset" }],  // illustration/audio liés
+    // Œuvre soumise
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+    assetIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Asset" }],
 
-    // Métadonnées PI / licence
-    license: {
-      type: String,
-      default: "standard", // vous pourrez étendre
-    },
+    // Typage informatif
+    kind: { type: String, default: "poem" }, // "poem"|"illustration"|"audio"|"mixed"
+    note: { type: String, default: "" },
 
-    // Stats
-    votes: { type: Number, default: 0 },          // bruts
-    weightedVotes: { type: Number, default: 0 },  // pondérés
+    // Modération
+    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+    moderationReason: { type: String, default: "" },
 
-    // Modération affichage
-    isVisible: { type: Boolean, default: true },
+    // Votes (par abonnés payants)
+    votes: { type: Number, default: 0 },
+    voters: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // anti-double vote
   },
   { timestamps: true }
 );
 
-export const ContestSubmission = mongoose.model("ContestSubmission", submissionSchema);
+export const ContestSubmission = mongoose.model("ContestSubmission", contestSubmissionSchema);
