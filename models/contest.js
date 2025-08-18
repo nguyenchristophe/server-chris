@@ -5,40 +5,33 @@ const contestSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
 
-    // Organisateur = user qui a proposé le concours
-    organizer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-
-    // Tarif (ex: droit d’inscription côté organisateur)
+    // Frais d’inscription (peut être 0)
     fee: { type: Number, default: 0 },
+    currency: { type: String, default: "EUR" },
 
-    // "pending" => en attente d’approbation par l’app
-    // "approved" => visible (si public) / utilisable
-    // "rejected" => refusé, stocke une raison optionnelle
-    status: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-    },
-    rejectionReason: { type: String, default: "" },
-
-    // Visibilité publique de la fiche concours
+    // public | private (pour être référencé publiquement)
     visibility: { type: String, enum: ["public", "private"], default: "public" },
 
-    // Fenêtre temporelle
-    startAt: { type: Date, default: null },
-    endAt: { type: Date, default: null },
+    // pending (en attente d’approbation par la plateforme), approved, rejected
+    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending", index: true },
 
-    // Règles d’éligibilité (texte libre +/ou codes abonnement)
-    eligibility: { type: String, default: "" },
-    allowedTiers: [{ type: String }], // p.ex. ["Visionnaire","Innovateur"]
+    // Organisateur (Basic, Semi-basic, Externe Must, etc.)
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
-    // Comptage agrégé (facultatif)
-    submissionsCount: { type: Number, default: 0 },
+    // Fenêtre de participation / votes
+    startAt: { type: Date, default: () => new Date() },
+    endAt: { type: Date, default: () => new Date(Date.now() + 7 * 86400000) }, // +7 jours par défaut
 
-    // Audit
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // admin qui a approuvé, si besoin
+    // Règles libres (texte)
+    rules: { type: String, default: "" },
+
+    // Limite facultative
+    maxSubmissions: { type: Number, default: 0 }, // 0 = illimité
   },
   { timestamps: true }
 );
+
+// Quelques indexes utiles
+contestSchema.index({ visibility: 1, status: 1, startAt: 1, endAt: 1 });
 
 export const Contest = mongoose.model("Contest", contestSchema);
