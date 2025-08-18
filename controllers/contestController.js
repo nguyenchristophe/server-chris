@@ -1,177 +1,182 @@
-// controllers/contestController.js
+import { asyncError } from "../middlewares/error.js";
+import ErrorHandler from "../utils/error.js";
 import { Contest } from "../models/contest.js";
 import { ContestSubmission } from "../models/contestSubmission.js";
-import { ContestVote } from "../models/contestVote.js";
-import { ContestAudit } from "../models/contestAudit.js";
-import ErrorHandler from "../utils/error.js";
-import { asyncError } from "../middlewares/error.js";
 
-// 1) Organisateur crée un concours (→ pending_approval)
-export const createContest = asyncError(async (req, res, next) => {
-  const {
-    title, description, rules, bannerUrl,
-    fee, submissionsStart, submissionsEnd, votingStart, votingEnd,
-    visibility,
-  } = req.body;
+/** GET /contest/list?scope=public|mine|all */
+export const listContests = asyncError(async (req, res) => {
+  const scope = (req.query.scope || "public").toString();
 
-  // tier de l’organisateur : à déduire du profil (user.role / user.organizerTier)
-  const organizerTier = req.user.organizerTier || "basic";
-
-  const contest = await Contest.create({
-    title, description, rules, bannerUrl,
-    fee,
-    submissionsStart, submissionsEnd, votingStart, votingEnd,
-    organizer: req.user._id,
-    organizerTier,
-    visibility: visibility || "public",
-    status: "pending_approval",
-  });
-
-  await ContestAudit.create({ contest: contest._id, actor: req.user._id, action: "create_contest" });
-
-  res.status(201).json({ success: true, contest });
-});
-
-// 2) Admin approuve / rejette
-export const reviewContest = asyncError(async (req, res, next) => {
-  const { id } = req.params;
-  const { action, reason } = req.body; // "approve" | "reject"
-  const c = await Contest.findById(id);
-  if (!c) return next(new ErrorHandler("Concours introuvable", 404));
-
-  if (action === "approve") {
-    c.status = "open";
-    c.rejectionReason = "";
-  } else if (action === "reject") {
-    c.status = "rejected";
-    c.rejectionReason = reason || "Non spécifié";
-  } else {
-    return next(new ErrorHandler("Action invalide", 400));
+  let filter = {};
+  if (scope === "public") {
+    filter = { status: "approved", visibility: "public" };
+  } else if (scope === "mine") {
+    if (!req.user) throw new ErrorHandler("Non authentifié", 401);
+    filter = { organizer: req.user._id };
+  } else if (scope === "all") {
+    // pour un admin
+    // tu peux restreindre ici: if(!req.user?.role==="admin") ...
+    filter = {};
   }
-  await c.save();
-  await ContestAudit.create({ contest: c._id, actor: req.user._id, action: contest_${action}, meta: { reason } });
 
-  res.json({ success: true, contest: c });
+  const contests = await Contest.find(filter).sort({ createdAt: -1 });
+  res.json({ success: true, contests });
 });
 
-// 3) Créateur soumet une œuvre
-export const submitToContest = asyncError(async (req, res, next) => {
-  const { id } = req.params; // contestId
-  const { kind, productRef, assetRefs = [], license } = req.body;
-  const c = await Contest.findById(id);
-  if (!c) return next(new ErrorHandler("Concours introuvable", 404));
-  if (c.status !== "open") return next(new ErrorHandler("Soumissions non ouvertes", 400));
+/** GET /contest/:id */
+export const getContestDetail = asyncError(async (req, res, next) => {
+  const contest = await Contest.findById(req.params.id);
+  if (!contest) return next(new ErrorHandler("Concours introuvable", 404));
 
-  const now = new Date();
-  if (now < c.submissionsStart || now > c.submissionsEnd)
-    return next(new ErrorHandler("Hors période de soumission", 400));
+  // Option: si non approuvé et pas owner/admin -> 403
+  if (contest.status !== "approved" && (!req.user || String(contest.organizer) !== String(req.user._id))) {
+    // autorise admin si besoin
+    // if (req.user?.role !== "admin") ...
+  }
+
+  res.json({ success: true, contest });
+});
+
+/** POST /contest/:id/submit */
+export const submitWork = asyncError(async (req, res, next) => {
+  const { id } = req.params; // contestId
+  const { productId, assetIds = [], kind = "poem", note = "" } = req.body;
+
+  const contest = await Contest.findById(id);
+  if (!contest) return next(new ErrorHandler("Concours introuvable", 404));
+  if (contest.status !== "approved") return next(new ErrorHandler("Concours non approuvé", 400));
+
+  // Option: période valide ?
+  if (contest.startAt && new Date() < contest.startAt)
+    return next(new ErrorHandler("Le concours n'a pas commencé", 400));
+  if (contest.endAt && new Date() > contest.endAt)
+    return next(new ErrorHandler("Le concours est terminé", 400));
+
+  // TODO: vérifier l’abonnement payant du user si nécessaire (tiers, etc.)
 
   const submission = await ContestSubmission.create({
-    contest: c._id,
-    creator: req.user._id,
+    contest: contest._id,
+    author: req.user._id,
+    productId,
+    assetIds,
     kind,
-    productRef,
-    assetRefs,
-    license: license || "standard",
+    note,
   });
 
-  c.stats.submissions += 1;
-  await c.save();
-
-  await ContestAudit.create({ contest: c._id, submission: submission._id, actor: req.user._id, action: "submit" });
+  // incrémente le compteur sur le concours
+  contest.submissionsCount += 1;
+  await contest.save();
 
   res.status(201).json({ success: true, submission });
 });
 
-// 4) Démarrer la période de votes (Admin ou auto-cron)
-export const openVoting = asyncError(async (req, res, next) => {
-  const { id } = req.params;
-  const c = await Contest.findById(id);
-  if (!c) return next(new ErrorHandler("Concours introuvable", 404));
-  c.status = "voting";
-  await c.save();
-  await ContestAudit.create({ contest: c._id, actor: req.user._id, action: "open_voting" });
-  res.json({ success: true, contest: c });
+/** GET /contest/pending  (admin/approbateur) */
+export const listPendingContests = asyncError(async (req, res) => {
+  const contests = await Contest.find({ status: "pending" }).sort({ createdAt: -1 });
+  res.json({ success: true, contests });
 });
 
-// 5) Voter (abonné payant)
-export const voteSubmission = asyncError(async (req, res, next) => {
-  const { id, submissionId } = req.params; // contestId, submissionId
-  const c = await Contest.findById(id);
-  if (!c) return next(new ErrorHandler("Concours introuvable", 404));
-  if (c.status !== "voting") return next(new ErrorHandler("Votes non ouverts", 400));
-
-  const now = new Date();
-  if (now < c.votingStart || now > c.votingEnd)
-    return next(new ErrorHandler("Hors période de vote", 400));
-
-  // Poids selon abonnement utilisateur
-  const sub = (req.user.subscription || "").toLowerCase(); // "basic" | "premium" | "must"…
-  const weight =
-    sub === "must" ? c.voteWeights.must :
-    sub === "premium" ? c.voteWeights.premium :
-    c.voteWeights.basic;
-
-  // crée vote unique (index unique submission+voter)
-  await ContestVote.create({
-    contest: c._id,
-    submission: submissionId,
-    voter: req.user._id,
-    weight,
-  });
-
-  // MAJ compteur
-  await ContestSubmission.updateOne(
-    { _id: submissionId },
-    { $inc: { votes: 1, weightedVotes: weight } }
-  );
-  c.stats.votes += 1;
-  await c.save();
-
-  await ContestAudit.create({ contest: c._id, submission: submissionId, actor: req.user._id, action: "vote", meta: { weight } });
-
-  res.json({ success: true, weight });
+/** PUT /contest/:id/approve  (admin/approbateur) */
+export const approveContest = asyncError(async (req, res, next) => {
+  const contest = await Contest.findById(req.params.id);
+  if (!contest) return next(new ErrorHandler("Concours introuvable", 404));
+  contest.status = "approved";
+  contest.rejectionReason = "";
+  contest.createdBy = req.user?._id;
+  await contest.save();
+  res.json({ success: true, message: "Concours approuvé" });
 });
 
-// 6) Clôture (Admin ou auto-cron)
-export const closeContest = asyncError(async (req, res, next) => {
-  const { id } = req.params;
-  const c = await Contest.findById(id);
-  if (!c) return next(new ErrorHandler("Concours introuvable", 404));
-
-  c.status = "closed";
-  await c.save();
-
-  // (Option) calcul gagnants : top N par weightedVotes
-  const top = await ContestSubmission.find({ contest: c._id })
-    .sort({ weightedVotes: -1 })
-    .limit(10)
-    .populate("creator productRef assetRefs");
-
-  await ContestAudit.create({ contest: c._id, actor: req.user._id, action: "close_contest" });
-
-  res.json({ success: true, contest: c, top });
+/** PUT /contest/:id/reject  (admin/approbateur) */
+export const rejectContest = asyncError(async (req, res, next) => {
+  const contest = await Contest.findById(req.params.id);
+  if (!contest) return next(new ErrorHandler("Concours introuvable", 404));
+  contest.status = "rejected";
+  contest.rejectionReason = req.body?.reason || "";
+  contest.createdBy = req.user?._id;
+  await contest.save();
+  res.json({ success: true, message: "Concours rejeté" });
 });
 
-// 7) Listing (public / mine / admin)
-export const listContests = asyncError(async (req, res, next) => {
-  const { scope } = req.query; // "public" | "mine" | "all" (admin)
-  let query = {};
-  if (scope === "mine") query = { organizer: req.user._id };
-  if (scope === "public") query = { visibility: "public", status: { $in: ["open", "voting", "closed"] } };
-  // "all" => admin voit tout
-
-  const list = await Contest.find(query).sort({ createdAt: -1 });
-  res.json({ success: true, contests: list });
+/** GET /contest/submissions  (admin/modérateurs) — toutes */
+export const listAllSubmissions = asyncError(async (req, res) => {
+  const submissions = await ContestSubmission.find({})
+    .populate("contest")
+    .populate("author", "name")
+    .populate("productId", "name images")
+    .populate("assetIds", "name type");
+  res.json({ success: true, submissions });
 });
 
-export const getContestDetail = asyncError(async (req, res, next) => {
-  const { id } = req.params;
-  const contest = await Contest.findById(id);
+/** GET /contest/:id/submissions  (organisateur/admin) — pour un concours */
+export const listSubmissionsForContest = asyncError(async (req, res, next) => {
+  const contest = await Contest.findById(req.params.id);
   if (!contest) return next(new ErrorHandler("Concours introuvable", 404));
 
-  const submissions = await ContestSubmission.find({ contest: id })
-    .populate("creator productRef assetRefs");
+  // restreindre à l’organisateur de ce concours ou admin si besoin
+  // if (String(contest.organizer) !== String(req.user._id) && req.user.role!=="admin") ...
 
-  res.json({ success: true, contest, submissions });
+  const submissions = await ContestSubmission.find({ contest: contest._id })
+    .populate("author", "name")
+    .populate("productId", "name images")
+    .populate("assetIds", "name type");
+  res.json({ success: true, submissions });
+});
+
+/** PUT /contest/submission/:submissionId/review (approve|reject) */
+export const reviewSubmission = asyncError(async (req, res, next) => {
+  const { submissionId } = req.params;
+  const { decision, reason = "" } = req.body;
+
+  const sub = await ContestSubmission.findById(submissionId).populate("contest");
+  if (!sub) return next(new ErrorHandler("Soumission introuvable", 404));
+
+  // droits (organisateur du concours ou admin)
+  // if (String(sub.contest.organizer) !== String(req.user._id) && req.user.role!=="admin") ...
+
+  if (!["approve", "reject"].includes(decision))
+    return next(new ErrorHandler("Décision invalide", 400));
+
+  sub.status = decision === "approve" ? "approved" : "rejected";
+  sub.moderationReason = decision === "reject" ? reason : "";
+  await sub.save();
+
+  res.json({ success: true, message: "Décision appliquée", submission: sub });
+});
+
+/** PUT /contest/:id/vote  { submissionId } (abonnés payants) */
+export const voteInContest = asyncError(async (req, res, next) => {
+  const { id } = req.params; // contestId
+  const { submissionId } = req.body;
+
+  const contest = await Contest.findById(id);
+  if (!contest) return next(new ErrorHandler("Concours introuvable", 404));
+  if (contest.status !== "approved") return next(new ErrorHandler("Concours non approuvé", 400));
+
+  // TODO: vérifier abonnement payant du req.user
+
+  const sub = await ContestSubmission.findById(submissionId);
+  if (!sub) return next(new ErrorHandler("Soumission introuvable", 404));
+  if (String(sub.contest) !== String(contest._id))
+    return next(new ErrorHandler("Soumission hors de ce concours", 400));
+
+  // anti double vote
+  if (sub.voters.some((u) => String(u) === String(req.user._id))) {
+    return next(new ErrorHandler("Vous avez déjà voté pour cette soumission", 400));
+  }
+
+  sub.votes += 1;
+  sub.voters.push(req.user._id);
+  await sub.save();
+
+  res.json({ success: true, votes: sub.votes });
+});
+
+/** GET /contest/mine/submissions — mes soumissions tous concours */
+export const listMySubmissions = asyncError(async (req, res) => {
+  const submissions = await ContestSubmission.find({ author: req.user._id })
+    .populate("contest")
+    .populate("productId", "name images")
+    .populate("assetIds", "name type");
+  res.json({ success: true, submissions });
 });
