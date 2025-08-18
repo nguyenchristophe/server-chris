@@ -1,38 +1,32 @@
 import express from "express";
-import { isAuthenticated, isAdmin } from "../middlewares/auth.js";
 import {
   listContests,
-  getContestDetail,
-  submitWork,
+  getContestById,
+  createContest,
+  submitToContest,
+  listMySubmissions,
   listPendingContests,
+  listOwnerSubmissions,
   approveContest,
   rejectContest,
-  listAllSubmissions,
-  listSubmissionsForContest,
-  reviewSubmission,
-  voteInContest,
-  listMySubmissions,
+  decideSubmission,
 } from "../controllers/contestController.js";
+import { isAuthenticated } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// Public / filtré
-router.get("/list", listContests);          // ?scope=public|mine|all
-router.get("/:id", getContestDetail);
+// Public (liste public) + scopes protégés
+router.get("/", isAuthenticated, listContests);
+router.get("/:id", isAuthenticated, getContestById);
+router.post("/", isAuthenticated, createContest);
 
-// Actions authentifiées
-router.post("/:id/submit", isAuthenticated, submitWork);
-router.put("/:id/vote", isAuthenticated, voteInContest);
-router.get("/mine/submissions", isAuthenticated, listMySubmissions);
+router.post("/:id/submit", isAuthenticated, submitToContest);
+router.get("/me/submissions", isAuthenticated, listMySubmissions);
 
-// Admin / Organisateur (selon ton auth)
-router.get("/pending", isAuthenticated, /* isAdmin, */ listPendingContests);
-router.put("/:id/approve", isAuthenticated, /* isAdmin, */ approveContest);
-router.put("/:id/reject", isAuthenticated, /* isAdmin, */ rejectContest);
-
-// Modération (admin / organisateur)
-router.get("/submissions", isAuthenticated, /* isAdmin, */ listAllSubmissions);
-router.get("/:id/submissions", isAuthenticated, /* checkOwnerOrAdmin, */ listSubmissionsForContest);
-router.put("/submission/:submissionId/review", isAuthenticated, /* checkOwnerOrAdmin, */ reviewSubmission);
+router.get("/owner/pending", isAuthenticated, listPendingContests);
+router.get("/owner/submissions", isAuthenticated, listOwnerSubmissions);
+router.put("/:id/approve", isAuthenticated, approveContest);
+router.put("/:id/reject", isAuthenticated, rejectContest);
+router.put("/submission/:id/decision", isAuthenticated, decideSubmission);
 
 export default router;
