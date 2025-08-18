@@ -2,27 +2,28 @@ import mongoose from "mongoose";
 
 const contestSubmissionSchema = new mongoose.Schema(
   {
-    // rattachement
-    contest: { type: mongoose.Schema.Types.ObjectId, ref: "Contest", required: true },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    contest: { type: mongoose.Schema.Types.ObjectId, ref: "Contest", required: true, index: true },
+    author:  { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
-    // Œuvre soumise
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-    assetIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Asset" }],
+    // "poem" = Product ; "asset" = Asset
+    contentType: { type: String, enum: ["poem", "asset"], required: true },
+    targetId:    { type: mongoose.Schema.Types.ObjectId, required: true, index: true },
 
-    // Typage informatif
-    kind: { type: String, default: "poem" }, // "poem"|"illustration"|"audio"|"mixed"
-    note: { type: String, default: "" },
+    // Flux de modération du propriétaire du concours (et/ou staff)
+    status: { type: String, enum: ["submitted", "accepted", "rejected"], default: "submitted", index: true },
+    moderatorNote: { type: String, default: "" },
 
-    // Modération
-    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
-    moderationReason: { type: String, default: "" },
-
-    // Votes (par abonnés payants)
-    votes: { type: Number, default: 0 },
-    voters: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // anti-double vote
+    // caches légers (facultatifs) pour l’UI si tu veux
+    title: { type: String, default: "" },
+    previewUrl: { type: String, default: "" },
   },
   { timestamps: true }
+);
+
+// Empêche qu’un auteur soumette la même cible 2x au même concours
+contestSubmissionSchema.index(
+  { contest: 1, author: 1, contentType: 1, targetId: 1 },
+  { unique: true }
 );
 
 export const ContestSubmission = mongoose.model("ContestSubmission", contestSubmissionSchema);
