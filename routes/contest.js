@@ -1,3 +1,4 @@
+// routes/contest.js
 import express from "express";
 import { isAuthenticated } from "../middlewares/auth.js";
 import {
@@ -26,30 +27,30 @@ const router = express.Router();
 
 // Listing & détails
 router.get("/", isAuthenticated, listContests);
-router.get("/:id", isAuthenticated, getContestById);
-router.get("/:id/submissions", isAuthenticated, listContestSubmissions);
+router.get("/:id([0-9a-fA-F]{24})", isAuthenticated, getContestById);
+router.get("/:id([0-9a-fA-F]{24})/submissions", isAuthenticated, listContestSubmissions);
 
 // Création / édition (organisateur)
 router.post("/", isAuthenticated, createContest);
-router.put("/:id", isAuthenticated, updateContest);
-router.delete("/:id", isAuthenticated, deleteContest);
+router.put("/:id([0-9a-fA-F]{24})", isAuthenticated, updateContest);
+router.delete("/:id([0-9a-fA-F]{24})", isAuthenticated, deleteContest);
 
 // Soumissions (participants)
-router.post("/:id/submit", isAuthenticated, submitToContest);
+router.post("/:id([0-9a-fA-F]{24})/submit", isAuthenticated, submitToContest);
 router.get("/me/submissions", isAuthenticated, listMySubmissions);
 
 // Modération plateforme
 router.get("/owner/pending", isAuthenticated, listPendingContests);
-router.put("/:id/approve", isAuthenticated, approveContest);
-router.put("/:id/reject", isAuthenticated, rejectContest);
+router.put("/:id([0-9a-fA-F]{24})/approve", isAuthenticated, approveContest);
+router.put("/:id([0-9a-fA-F]{24})/reject", isAuthenticated, rejectContest);
 
 // Modération propriétaire (sur les soumissions reçues)
 router.get("/owner/submissions", isAuthenticated, listOwnerSubmissions);
-router.put("/submission/:id/decision", isAuthenticated, decideSubmission);
+router.put("/submission/:id([0-9a-fA-F]{24})/decision", isAuthenticated, decideSubmission);
 
 // Votes
-router.post("/:id/vote", isAuthenticated, castVote);
-router.delete("/:id/vote/:submissionId", isAuthenticated, retractVote);
-router.get("/:id/leaderboard", isAuthenticated, leaderboard);
+router.post("/:id([0-9a-fA-F]{24})/vote", isAuthenticated, castVote);
+router.delete("/:id([0-9a-fA-F]{24})/vote/:submissionId([0-9a-fA-F]{24})", isAuthenticated, retractVote);
+router.get("/:id([0-9a-fA-F]{24})/leaderboard", isAuthenticated, leaderboard);
 
 export default router;
